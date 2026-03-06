@@ -42,35 +42,35 @@ export default function NotesGrid({ notes, onSelectNote, activeView }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {filteredNotes.map((note) => (
         <div
           key={note._id}
           onClick={() => onSelectNote(note)}
-          className="group bg-white rounded-xl border-2 border-slate-200 hover:border-blue-400 p-5 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1"
+          className="group bg-white rounded-xl border border-gray-200 p-6 cursor-pointer transition-all hover:shadow-xl hover:border-indigo-300 hover:-translate-y-1"
         >
-          <div className="flex items-start justify-between mb-3">
-            <h3 className="font-bold text-slate-800 text-lg truncate flex-1 group-hover:text-blue-600 transition">
+          <div className="flex items-start justify-between mb-4">
+            <h3 className="font-bold text-gray-900 text-lg truncate flex-1 group-hover:text-indigo-600 transition">
               {note.title || 'Untitled'}
             </h3>
             {note.collaborators && note.collaborators.length > 0 && (
-              <div className="ml-2 flex-shrink-0 bg-blue-100 rounded-full p-1.5">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              <div className="ml-2 flex-shrink-0 bg-purple-100 rounded-lg p-2">
+                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
               </div>
             )}
           </div>
           
-          <p className="text-sm text-slate-600 line-clamp-3 mb-4 leading-relaxed min-h-[60px]">
+          <p className="text-sm text-gray-600 line-clamp-4 mb-4 leading-relaxed min-h-[80px]">
             {stripHtml(note.content) || 'No content'}
           </p>
           
-          <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-            <span className="text-xs text-slate-500 font-medium">{formatDate(note.updatedAt)}</span>
-            <div className="flex items-center gap-1">
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <span className="text-xs text-gray-500 font-medium">{formatDate(note.updatedAt)}</span>
+            <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-xs text-slate-500">Saved</span>
+              <span className="text-xs text-gray-500">Saved</span>
             </div>
           </div>
         </div>
