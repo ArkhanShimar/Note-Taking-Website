@@ -26,7 +26,7 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-4 bg-slate-100 rounded-xl flex items-center justify-center">
+          <div className="w-20 h-20 mx-auto mb-4 bg-slate-100 rounded-2xl flex items-center justify-center">
             <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -45,7 +45,7 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
           <div
             key={note._id}
             onClick={() => setPreviewNote(note)}
-            className="group bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-4 cursor-pointer transition-all hover:shadow-lg hover:border-indigo-400 hover:-translate-y-1 relative overflow-hidden"
+            className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-200 p-4 cursor-pointer transition-all hover:shadow-lg hover:border-indigo-400 hover:-translate-y-1 relative overflow-hidden"
           >
             {/* Decorative gradient overlay */}
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full blur-2xl opacity-0 group-hover:opacity-40 transition-opacity -z-0"></div>

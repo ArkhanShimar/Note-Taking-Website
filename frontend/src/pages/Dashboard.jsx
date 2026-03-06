@@ -307,28 +307,94 @@ export default function Dashboard() {
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
             <div className="max-w-7xl mx-auto p-6">
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                    {activeView === 'all-notes' ? 'All Notes' : 'Shared Notes'}
-                  </h1>
-                  <p className="text-sm text-gray-600">{displayNotes.length} {displayNotes.length === 1 ? 'note' : 'notes'}</p>
+              {/* Header Section */}
+              <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                      {activeView === 'all-notes' ? 'My Notes' : 'Shared Notes'}
+                    </h1>
+                    <p className="text-sm text-gray-500">
+                      {activeView === 'all-notes' 
+                        ? 'Capture ideas, organize them, and share when needed.' 
+                        : 'Notes shared with you by collaborators'}
+                    </p>
+                  </div>
+                  {activeView === 'shared' && (
+                    <button
+                      onClick={() => setShowShareNotesModal(true)}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                      Share Notes
+                    </button>
+                  )}
                 </div>
-                {activeView === 'shared' && (
-                  <button
-                    onClick={() => setShowShareNotesModal(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center gap-2 text-sm"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+
+                {/* Search and Filters */}
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1">
+                    <svg
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    Share Notes
-                  </button>
-                )}
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={handleSearch}
+                      placeholder="Search notes by title or content..."
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-gray-50 hover:bg-white transition"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+                    <button
+                      onClick={() => setSortBy('updated')}
+                      className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
+                        sortBy === 'updated'
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setSortBy('created')}
+                      className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
+                        sortBy === 'created'
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Today
+                    </button>
+                    <button
+                      onClick={() => setSortBy('title')}
+                      className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
+                        sortBy === 'title'
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      This Week
+                    </button>
+                    <button
+                      className="px-4 py-2 rounded-xl text-xs font-medium text-gray-600 hover:text-gray-900 transition"
+                    >
+                      This Month
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {displayNotes.length === 0 && activeView === 'shared' ? (
-                <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-10 text-center">
+                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-10 text-center">
                   <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <svg className="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -338,7 +404,7 @@ export default function Dashboard() {
                   <p className="text-sm text-gray-600 mb-4">Start collaborating by sharing your notes with others</p>
                   <button
                     onClick={() => setShowShareNotesModal(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition inline-flex items-center gap-2 text-sm"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition inline-flex items-center gap-2 text-sm"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -347,65 +413,10 @@ export default function Dashboard() {
                   </button>
                 </div>
               ) : (
-                <>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="relative flex-1 max-w-2xl">
-                      <svg
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={handleSearch}
-                        placeholder="Search notes..."
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-1 bg-white rounded-lg p-1 border border-gray-200">
-                      <button
-                        onClick={() => setSortBy('updated')}
-                        className={`px-3 py-2 rounded-md text-xs font-medium transition ${
-                          sortBy === 'updated'
-                            ? 'bg-indigo-600 text-white'
-                            : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                      >
-                        Recent
-                      </button>
-                      <button
-                        onClick={() => setSortBy('created')}
-                        className={`px-3 py-2 rounded-md text-xs font-medium transition ${
-                          sortBy === 'created'
-                            ? 'bg-indigo-600 text-white'
-                            : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                      >
-                        Created
-                      </button>
-                      <button
-                        onClick={() => setSortBy('title')}
-                        className={`px-3 py-2 rounded-md text-xs font-medium transition ${
-                          sortBy === 'title'
-                            ? 'bg-indigo-600 text-white'
-                            : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                      >
-                        Title
-                      </button>
-                    </div>
-                  </div>
-
-                  <NotesGrid
-                    notes={displayNotes}
-                    onSelectNote={setSelectedNote}
-                  />
-                </>
+                <NotesGrid
+                  notes={displayNotes}
+                  onSelectNote={setSelectedNote}
+                />
               )}
             </div>
           </div>
@@ -432,9 +443,9 @@ export default function Dashboard() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-6">
                 <button
                   onClick={() => setShowCreateFolderModal(true)}
-                  className="bg-white rounded-lg border-2 border-dashed border-gray-300 hover:border-indigo-400 p-6 cursor-pointer transition-all hover:shadow-md flex flex-col items-center justify-center text-center group"
+                  className="bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-indigo-400 p-6 cursor-pointer transition-all hover:shadow-md flex flex-col items-center justify-center text-center group"
                 >
-                  <div className="w-12 h-12 bg-gray-100 group-hover:bg-indigo-50 rounded-lg flex items-center justify-center mb-2 transition">
+                  <div className="w-12 h-12 bg-gray-100 group-hover:bg-indigo-50 rounded-xl flex items-center justify-center mb-2 transition">
                     <svg className="w-6 h-6 text-gray-400 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
@@ -451,7 +462,7 @@ export default function Dashboard() {
                         setSelectedFolder(folder);
                         setActiveView('folder-view');
                       }}
-                      className={`bg-gradient-to-br ${getColorClasses(folder.color)} rounded-lg p-6 cursor-pointer transition-all hover:shadow-lg flex flex-col items-center justify-center text-center group relative`}
+                      className={`bg-gradient-to-br ${getColorClasses(folder.color)} rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg flex flex-col items-center justify-center text-center group relative`}
                     >
                       <button
                         onClick={(e) => {
@@ -464,7 +475,7 @@ export default function Dashboard() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
-                      <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-2">
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-2">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
@@ -486,9 +497,9 @@ export default function Dashboard() {
                         <div
                           key={note._id}
                           onClick={() => setSelectedNote(note)}
-                          className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition"
+                          className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl cursor-pointer transition"
                         >
-                          <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
                             <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
@@ -887,7 +898,7 @@ export default function Dashboard() {
                               </svg>
                             )}
                           </div>
-                          <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
                             <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>

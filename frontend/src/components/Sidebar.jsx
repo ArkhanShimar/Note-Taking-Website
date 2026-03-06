@@ -36,7 +36,7 @@ export default function Sidebar({ activeView, setActiveView, onCreateNote }) {
         {/* New Note Button */}
         <button
           onClick={onCreateNote}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 text-sm"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -53,7 +53,7 @@ export default function Sidebar({ activeView, setActiveView, onCreateNote }) {
             <button
               key={item.id}
               onClick={() => setActiveView(item.id)}
-              className={`w-full text-left px-3 py-2.5 rounded-lg transition-all flex items-center gap-3 text-sm ${
+              className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center gap-3 text-sm ${
                 activeView === item.id
                   ? 'bg-indigo-50 text-indigo-700 font-medium'
                   : 'text-gray-700 hover:bg-gray-50'
@@ -89,7 +89,7 @@ export default function Sidebar({ activeView, setActiveView, onCreateNote }) {
           <div className="flex gap-2">
             <button
               onClick={() => setActiveView('profile')}
-              className="flex-1 text-xs text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-100 py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 font-medium border border-gray-200"
+              className="flex-1 text-xs text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-100 py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 font-medium border border-gray-200"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -98,7 +98,7 @@ export default function Sidebar({ activeView, setActiveView, onCreateNote }) {
             </button>
             <button
               onClick={() => setActiveView('contact')}
-              className="flex-1 text-xs text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-100 py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 font-medium border border-gray-200"
+              className="flex-1 text-xs text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-100 py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 font-medium border border-gray-200"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -108,7 +108,7 @@ export default function Sidebar({ activeView, setActiveView, onCreateNote }) {
           </div>
           <button
             onClick={handleLogout}
-            className="w-full mt-2 text-sm text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 py-2 px-3 rounded-lg transition flex items-center justify-center gap-2 font-medium border border-gray-200"
+            className="w-full mt-2 text-sm text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 py-2 px-3 rounded-xl transition flex items-center justify-center gap-2 font-medium border border-gray-200"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
