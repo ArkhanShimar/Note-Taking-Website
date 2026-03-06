@@ -435,23 +435,26 @@ export default function Dashboard() {
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
             <div className="max-w-7xl mx-auto p-6">
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-1">Folders</h1>
-                <p className="text-sm text-gray-600">Organize your notes into folders</p>
+              {/* Header Section */}
+              <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Folders</h1>
+                    <p className="text-sm text-gray-500">Organize your notes into folders for better management</p>
+                  </div>
+                  <button
+                    onClick={() => setShowCreateFolderModal(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    New Folder
+                  </button>
+                </div>
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-6">
-                <button
-                  onClick={() => setShowCreateFolderModal(true)}
-                  className="bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-indigo-400 p-6 cursor-pointer transition-all hover:shadow-md flex flex-col items-center justify-center text-center group"
-                >
-                  <div className="w-12 h-12 bg-gray-100 group-hover:bg-indigo-50 rounded-xl flex items-center justify-center mb-2 transition">
-                    <svg className="w-6 h-6 text-gray-400 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </div>
-                  <p className="text-xs font-semibold text-gray-700 group-hover:text-gray-900">New Folder</p>
-                </button>
 
                 {folders.map((folder) => {
                   const folderNotes = notes.filter(n => n.folder === folder._id);
