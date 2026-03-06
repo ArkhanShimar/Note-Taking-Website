@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 
 router.post('/', auth, folderController.createFolder);
 router.get('/', auth, folderController.getFolders);
+router.get('/:id', auth, folderController.getFolderById);
 router.put('/:id', auth, folderController.updateFolder);
 router.delete('/:id', auth, folderController.deleteFolder);
 

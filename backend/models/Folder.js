@@ -8,7 +8,7 @@ const folderSchema = new mongoose.Schema({
   },
   color: {
     type: String,
-    default: '#F59E0B'
+    default: 'indigo'
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

@@ -6,7 +6,12 @@ export const folderService = {
     return response.data;
   },
 
-  async createFolder(name, color = '#F59E0B') {
+  async getFolderById(id) {
+    const response = await api.get(`/folders/${id}`);
+    return response.data;
+  },
+
+  async createFolder(name, color = 'indigo') {
     const response = await api.post('/folders', { name, color });
     return response.data;
   },

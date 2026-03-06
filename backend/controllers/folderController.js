@@ -1,5 +1,4 @@
 const Folder = require('../models/Folder');
-const Note = require('../models/Note');
 
 exports.createFolder = async (req, res) => {
   try {
@@ -7,9 +6,11 @@ exports.createFolder = async (req, res) => {
 
     const folder = await Folder.create({
       name,
-      color: color || '#F59E0B',
+      color: color || 'indigo',
       owner: req.user.id
     });
+
+    await folder.populate('owner', 'name email');
 
     res.status(201).json(folder);
   } catch (error) {
@@ -22,22 +23,30 @@ exports.getFolders = async (req, res) => {
     const folders = await Folder.find({
       owner: req.user.id,
       deleted: false
-    }).sort({ createdAt: -1 });
+    })
+    .populate('owner', 'name email')
+    .sort({ createdAt: -1 });
 
-    const foldersWithCount = await Promise.all(
-      folders.map(async (folder) => {
-        const noteCount = await Note.countDocuments({
-          folder: folder._id,
-          deleted: false
-        });
-        return {
-          ...folder.toObject(),
-          noteCount
-        };
-      })
-    );
+    res.json(folders);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
 
-    res.json(foldersWithCount);
+exports.getFolderById = async (req, res) => {
+  try {
+    const folder = await Folder.findOne({
+      _id: req.params.id,
+      owner: req.user.id,
+      deleted: false
+    })
+    .populate('owner', 'name email');
+
+    if (!folder) {
+      return res.status(404).json({ message: 'Folder not found' });
+    }
+
+    res.json(folder);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -57,10 +66,12 @@ exports.updateFolder = async (req, res) => {
       return res.status(404).json({ message: 'Folder not found' });
     }
 
-    if (name) folder.name = name;
-    if (color) folder.color = color;
+    if (name !== undefined) folder.name = name;
+    if (color !== undefined) folder.color = color;
 
     await folder.save();
+    await folder.populate('owner', 'name email');
+
     res.json(folder);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -81,11 +92,6 @@ exports.deleteFolder = async (req, res) => {
 
     folder.deleted = true;
     await folder.save();
-
-    await Note.updateMany(
-      { folder: folder._id },
-      { folder: null }
-    );
 
     res.json({ message: 'Folder deleted successfully' });
   } catch (error) {
