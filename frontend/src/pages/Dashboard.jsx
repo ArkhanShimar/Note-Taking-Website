@@ -133,6 +133,18 @@ export default function Dashboard() {
     setSelectedNote(null);
   };
 
+  const getColorClasses = (color) => {
+    const colorMap = {
+      indigo: 'from-indigo-500 to-purple-600',
+      green: 'from-green-500 to-emerald-600',
+      orange: 'from-orange-500 to-red-600',
+      blue: 'from-blue-500 to-cyan-600',
+      pink: 'from-pink-500 to-rose-600',
+      yellow: 'from-yellow-500 to-orange-600',
+    };
+    return colorMap[color] || colorMap.indigo;
+  };
+
   const sortedNotes = [...notes].sort((a, b) => {
     if (sortBy === 'updated') {
       return new Date(b.updatedAt) - new Date(a.updatedAt);
@@ -287,18 +299,6 @@ export default function Dashboard() {
           { name: 'Pink', value: 'pink', from: 'from-pink-500', to: 'to-rose-600' },
           { name: 'Yellow', value: 'yellow', from: 'from-yellow-500', to: 'to-orange-600' },
         ];
-
-        const getColorClasses = (color) => {
-          const colorMap = {
-            indigo: 'from-indigo-500 to-purple-600',
-            green: 'from-green-500 to-emerald-600',
-            orange: 'from-orange-500 to-red-600',
-            blue: 'from-blue-500 to-cyan-600',
-            pink: 'from-pink-500 to-rose-600',
-            yellow: 'from-yellow-500 to-orange-600',
-          };
-          return colorMap[color] || colorMap.indigo;
-        };
 
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
