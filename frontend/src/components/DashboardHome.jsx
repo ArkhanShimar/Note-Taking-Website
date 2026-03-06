@@ -18,7 +18,7 @@ export default function DashboardHome({ notes, onSelectNote, onCreateNote }) {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
       <div className="max-w-7xl mx-auto p-6">
         {/* Welcome Section */}
         <div className="mb-6">

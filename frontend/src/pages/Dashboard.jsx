@@ -363,7 +363,7 @@ export default function Dashboard() {
             : filteredNotes;
 
         return (
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
             <div className="max-w-7xl mx-auto p-6">
               {/* Header Section */}
               <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
@@ -517,7 +517,7 @@ export default function Dashboard() {
         ];
 
         return (
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
             <div className="max-w-7xl mx-auto p-6">
               {/* Header Section */}
               <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
@@ -703,7 +703,7 @@ export default function Dashboard() {
         const availableNotes = notes.filter(n => !n.folder);
 
         return (
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
             <div className="max-w-7xl mx-auto p-6">
               {/* Header Section */}
               <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
@@ -836,7 +836,7 @@ export default function Dashboard() {
 
       case 'contacts':
         return (
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
             <div className="max-w-7xl mx-auto p-8">
               <div className="mb-8">
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">Contacts</h1>
@@ -857,7 +857,7 @@ export default function Dashboard() {
 
       case 'profile':
         return (
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
             <div className="max-w-7xl mx-auto p-8">
               <div className="mb-8">
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">Profile Settings</h1>
