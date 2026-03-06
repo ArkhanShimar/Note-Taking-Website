@@ -11,13 +11,13 @@ export const noteService = {
     return response.data;
   },
 
-  async createNote(title, content = '') {
-    const response = await api.post('/notes', { title, content });
+  async createNote(title, content = '', folder = null) {
+    const response = await api.post('/notes', { title, content, folder });
     return response.data;
   },
 
-  async updateNote(id, title, content) {
-    const response = await api.put(`/notes/${id}`, { title, content });
+  async updateNote(id, title, content, folder) {
+    const response = await api.put(`/notes/${id}`, { title, content, folder });
     return response.data;
   },
 

@@ -2,12 +2,13 @@ const Note = require('../models/Note');
 
 exports.createNote = async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, folder } = req.body;
 
     const note = await Note.create({
       title,
       content: content || '',
-      owner: req.user.id
+      owner: req.user.id,
+      folder: folder || null
     });
 
     await note.populate('owner', 'name email');
@@ -62,7 +63,7 @@ exports.getNoteById = async (req, res) => {
 
 exports.updateNote = async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, folder } = req.body;
 
     const note = await Note.findOne({
       _id: req.params.id,
@@ -79,6 +80,7 @@ exports.updateNote = async (req, res) => {
 
     if (title !== undefined) note.title = title;
     if (content !== undefined) note.content = content;
+    if (folder !== undefined) note.folder = folder;
 
     await note.save();
     await note.populate('owner', 'name email');

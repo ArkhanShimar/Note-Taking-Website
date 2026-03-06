@@ -4,11 +4,12 @@ import 'react-quill/dist/quill.snow.css';
 import { noteService } from '../services/noteService';
 import { useAuth } from '../context/AuthContext';
 
-export default function NoteEditor({ note, onUpdate, onDelete }) {
+export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showFolderMenu, setShowFolderMenu] = useState(false);
   const [collaboratorEmail, setCollaboratorEmail] = useState('');
   const { user } = useAuth();
   const quillRef = useRef(null);
@@ -25,13 +26,25 @@ export default function NoteEditor({ note, onUpdate, onDelete }) {
 
     setSaving(true);
     try {
-      const updated = await noteService.updateNote(note._id, title, content);
+      const updated = await noteService.updateNote(note._id, title, content, note.folder);
       onUpdate(updated);
     } catch (error) {
       console.error('Failed to save note:', error);
       alert('Failed to save note');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleMoveToFolder = async (folderId) => {
+    if (!note) return;
+
+    try {
+      const updated = await noteService.updateNote(note._id, title, content, folderId);
+      onUpdate(updated);
+      setShowFolderMenu(false);
+    } catch (error) {
+      console.error('Failed to move note:', error);
     }
   };
 
@@ -131,6 +144,36 @@ export default function NoteEditor({ note, onUpdate, onDelete }) {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <div className="relative">
+            <button
+              onClick={() => setShowFolderMenu(!showFolderMenu)}
+              className="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+              Move to Folder
+            </button>
+            {showFolderMenu && (
+              <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-slate-200 py-2 min-w-[200px] z-10">
+                <button
+                  onClick={() => handleMoveToFolder(null)}
+                  className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  No Folder
+                </button>
+                {folders && folders.map((folder) => (
+                  <button
+                    key={folder._id}
+                    onClick={() => handleMoveToFolder(folder._id)}
+                    className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  >
+                    {folder.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             onClick={() => setShowShareModal(true)}
             className="px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-2"
