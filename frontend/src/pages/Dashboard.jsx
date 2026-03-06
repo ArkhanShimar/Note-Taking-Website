@@ -620,70 +620,73 @@ export default function Dashboard() {
 
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
-            <div className="max-w-7xl mx-auto p-8">
-              <div className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => {
-                      setSelectedFolder(null);
-                      setActiveView('folders');
-                    }}
-                    className="w-10 h-10 bg-white rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition"
-                  >
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                  </button>
-                  <div className={`w-16 h-16 bg-gradient-to-br ${getColorClasses(selectedFolder.color)} rounded-2xl flex items-center justify-center shadow-lg`}>
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h1 className="text-4xl font-bold text-gray-900">{selectedFolder.name}</h1>
-                    <p className="text-gray-600 mt-1">{folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setShowAddToFolderModal(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl flex items-center gap-2"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add Note
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (window.confirm(`Delete "${selectedFolder.name}" folder? Notes inside will not be deleted.`)) {
-                        handleDeleteFolder(selectedFolder._id);
+            <div className="max-w-7xl mx-auto p-6">
+              {/* Header Section */}
+              <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => {
                         setSelectedFolder(null);
                         setActiveView('folders');
-                      }
-                    }}
-                    className="bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete Folder
-                  </button>
+                      }}
+                      className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition"
+                    >
+                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                      </svg>
+                    </button>
+                    <div className={`w-14 h-14 bg-gradient-to-br ${getColorClasses(selectedFolder.color)} rounded-2xl flex items-center justify-center`}>
+                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-bold text-gray-900">{selectedFolder.name}</h1>
+                      <p className="text-sm text-gray-500">{folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowAddToFolderModal(true)}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add Note
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`Delete "${selectedFolder.name}" folder? Notes inside will not be deleted.`)) {
+                          handleDeleteFolder(selectedFolder._id);
+                          setSelectedFolder(null);
+                          setActiveView('folders');
+                        }
+                      }}
+                      className="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete Folder
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {folderNotes.length === 0 ? (
-                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-12 text-center">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-10 text-center">
+                  <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No notes in this folder</h3>
-                  <p className="text-gray-600 mb-4">Add notes to organize them in this folder</p>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">No notes in this folder</h3>
+                  <p className="text-sm text-gray-600 mb-3">Add notes to organize them in this folder</p>
                   <button
                     onClick={() => setShowAddToFolderModal(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-5 rounded-xl transition"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition text-sm"
                   >
                     Add Note
                   </button>
