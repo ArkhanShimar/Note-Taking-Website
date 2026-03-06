@@ -18,6 +18,8 @@ export default function Dashboard() {
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [newFolderColor, setNewFolderColor] = useState('indigo');
+  const [selectedFolder, setSelectedFolder] = useState(null);
+  const [showAddToFolderModal, setShowAddToFolderModal] = useState(false);
 
   useEffect(() => {
     loadNotes();
@@ -68,6 +70,26 @@ export default function Dashboard() {
       setFolders(folders.filter(f => f._id !== folderId));
     } catch (error) {
       console.error('Failed to delete folder:', error);
+    }
+  };
+
+  const handleAddNoteToFolder = async (noteId, folderId) => {
+    try {
+      const updated = await noteService.updateNote(noteId, undefined, undefined, folderId);
+      setNotes(notes.map(n => n._id === noteId ? updated : n));
+      setShowAddToFolderModal(false);
+    } catch (error) {
+      console.error('Failed to add note to folder:', error);
+      alert('Failed to add note to folder');
+    }
+  };
+
+  const handleRemoveNoteFromFolder = async (noteId) => {
+    try {
+      const updated = await noteService.updateNote(noteId, undefined, undefined, null);
+      setNotes(notes.map(n => n._id === noteId ? updated : n));
+    } catch (error) {
+      console.error('Failed to remove note from folder:', error);
     }
   };
 
@@ -304,6 +326,10 @@ export default function Dashboard() {
                   return (
                     <div
                       key={folder._id}
+                      onClick={() => {
+                        setSelectedFolder(folder);
+                        setActiveView('folder-view');
+                      }}
                       className={`bg-gradient-to-br ${getColorClasses(folder.color)} rounded-xl p-8 cursor-pointer transition-all hover:shadow-xl flex flex-col items-center justify-center text-center group relative`}
                     >
                       <button
@@ -445,6 +471,125 @@ export default function Dashboard() {
                 <p className="text-gray-600">This feature is under development</p>
               </div>
             </div>
+          </div>
+        );
+
+      case 'folder-view':
+        if (!selectedFolder) {
+          setActiveView('folders');
+          return null;
+        }
+
+        const folderNotes = notes.filter(n => n.folder === selectedFolder._id);
+        const availableNotes = notes.filter(n => !n.folder);
+
+        return (
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
+            <div className="max-w-7xl mx-auto p-8">
+              <div className="mb-8 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => {
+                      setSelectedFolder(null);
+                      setActiveView('folders');
+                    }}
+                    className="w-10 h-10 bg-white rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition"
+                  >
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                  </button>
+                  <div className={`w-16 h-16 bg-gradient-to-br ${getColorClasses(selectedFolder.color)} rounded-2xl flex items-center justify-center shadow-lg`}>
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h1 className="text-4xl font-bold text-gray-900">{selectedFolder.name}</h1>
+                    <p className="text-gray-600 mt-1">{folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAddToFolderModal(true)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Note
+                </button>
+              </div>
+
+              {folderNotes.length === 0 ? (
+                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-12 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No notes in this folder</h3>
+                  <p className="text-gray-600 mb-4">Add notes to organize them in this folder</p>
+                  <button
+                    onClick={() => setShowAddToFolderModal(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-5 rounded-xl transition"
+                  >
+                    Add Note
+                  </button>
+                </div>
+              ) : (
+                <NotesGrid
+                  notes={folderNotes}
+                  onSelectNote={setSelectedNote}
+                />
+              )}
+            </div>
+
+            {showAddToFolderModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 max-h-[80vh] overflow-y-auto">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900">Add Note to {selectedFolder.name}</h3>
+                    <button
+                      onClick={() => setShowAddToFolderModal(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {availableNotes.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600">No notes available to add. All notes are already in folders.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {availableNotes.map((note) => (
+                        <div
+                          key={note._id}
+                          onClick={() => handleAddNoteToFolder(note._id, selectedFolder._id)}
+                          className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition"
+                        >
+                          <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 truncate">{note.title || 'Untitled'}</p>
+                            <p className="text-sm text-gray-500">{new Date(note.updatedAt).toLocaleDateString()}</p>
+                          </div>
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         );
 
