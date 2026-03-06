@@ -30,7 +30,8 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
       onUpdate(updated);
     } catch (error) {
       console.error('Failed to save note:', error);
-      alert('Failed to save note');
+      const errorMessage = error.response?.data?.message || 'Failed to save note. Please try again.';
+      alert(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -69,7 +70,8 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
       setCollaboratorEmail('');
       alert('Collaborator added successfully!');
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to add collaborator');
+      const errorMessage = error.response?.data?.message || 'Failed to add collaborator. Please try again.';
+      alert(errorMessage);
     }
   };
 

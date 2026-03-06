@@ -58,7 +58,8 @@ export default function Dashboard() {
       setShowCreateFolderModal(false);
     } catch (error) {
       console.error('Failed to create folder:', error);
-      alert('Failed to create folder');
+      const errorMessage = error.response?.data?.message || 'Failed to create folder. Please try again.';
+      alert(errorMessage);
     }
   };
 
@@ -80,7 +81,8 @@ export default function Dashboard() {
       setShowAddToFolderModal(false);
     } catch (error) {
       console.error('Failed to add note to folder:', error);
-      alert('Failed to add note to folder');
+      const errorMessage = error.response?.data?.message || 'Failed to add note to folder. Please try again.';
+      alert(errorMessage);
     }
   };
 
