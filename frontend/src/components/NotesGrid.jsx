@@ -1,4 +1,4 @@
-export default function NotesGrid({ notes, onSelectNote, activeView }) {
+export default function NotesGrid({ notes, onSelectNote }) {
   const formatDate = (date) => {
     const d = new Date(date);
     const now = new Date();
@@ -18,14 +18,7 @@ export default function NotesGrid({ notes, onSelectNote, activeView }) {
     return text.substring(0, 150);
   };
 
-  const filteredNotes = notes.filter(note => {
-    if (activeView === 'shared') {
-      return note.collaborators && note.collaborators.length > 0;
-    }
-    return true;
-  });
-
-  if (filteredNotes.length === 0) {
+  if (notes.length === 0) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
@@ -43,7 +36,7 @@ export default function NotesGrid({ notes, onSelectNote, activeView }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {filteredNotes.map((note) => (
+      {notes.map((note) => (
         <div
           key={note._id}
           onClick={() => onSelectNote(note)}

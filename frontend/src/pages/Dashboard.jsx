@@ -4,6 +4,7 @@ import DashboardHome from '../components/DashboardHome';
 import NotesGrid from '../components/NotesGrid';
 import NoteEditor from '../components/NoteEditor';
 import { noteService } from '../services/noteService';
+import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
   const [notes, setNotes] = useState([]);
@@ -138,14 +139,18 @@ export default function Dashboard() {
 
       case 'all-notes':
       case 'shared':
+        const displayNotes = activeView === 'shared' 
+          ? sortedNotes.filter(note => note.collaborators && note.collaborators.length > 0)
+          : sortedNotes;
+
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
             <div className="max-w-7xl mx-auto p-8">
               <div className="mb-8">
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                  {activeView === 'all-notes' ? 'All Notes' : 'Shared with me'}
+                  {activeView === 'all-notes' ? 'All Notes' : 'Shared Notes'}
                 </h1>
-                <p className="text-gray-600">{sortedNotes.length} {sortedNotes.length === 1 ? 'note' : 'notes'}</p>
+                <p className="text-gray-600">{displayNotes.length} {displayNotes.length === 1 ? 'note' : 'notes'}</p>
               </div>
 
               <div className="flex items-center gap-4 mb-8">
@@ -202,9 +207,8 @@ export default function Dashboard() {
               </div>
 
               <NotesGrid
-                notes={sortedNotes}
+                notes={displayNotes}
                 onSelectNote={setSelectedNote}
-                activeView={activeView}
               />
             </div>
           </div>
