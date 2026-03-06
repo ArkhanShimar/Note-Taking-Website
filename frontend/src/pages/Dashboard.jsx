@@ -306,20 +306,20 @@ export default function Dashboard() {
 
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
-            <div className="max-w-7xl mx-auto p-8">
-              <div className="mb-8 flex items-center justify-between">
+            <div className="max-w-7xl mx-auto p-6">
+              <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-1">
                     {activeView === 'all-notes' ? 'All Notes' : 'Shared Notes'}
                   </h1>
-                  <p className="text-gray-600">{displayNotes.length} {displayNotes.length === 1 ? 'note' : 'notes'}</p>
+                  <p className="text-sm text-gray-600">{displayNotes.length} {displayNotes.length === 1 ? 'note' : 'notes'}</p>
                 </div>
                 {activeView === 'shared' && (
                   <button
                     onClick={() => setShowShareNotesModal(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl flex items-center gap-2"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center gap-2 text-sm"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                     Share Notes
@@ -328,19 +328,19 @@ export default function Dashboard() {
               </div>
 
               {displayNotes.length === 0 && activeView === 'shared' ? (
-                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-12 text-center">
-                  <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-10 text-center">
+                  <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No shared notes yet</h3>
-                  <p className="text-gray-600 mb-6">Start collaborating by sharing your notes with others</p>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">No shared notes yet</h3>
+                  <p className="text-sm text-gray-600 mb-4">Start collaborating by sharing your notes with others</p>
                   <button
                     onClick={() => setShowShareNotesModal(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-5 rounded-xl transition inline-flex items-center gap-2"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition inline-flex items-center gap-2 text-sm"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                     Share Your First Note
@@ -348,10 +348,10 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-4 mb-8">
+                  <div className="flex items-center gap-3 mb-6">
                     <div className="relative flex-1 max-w-2xl">
                       <svg
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -363,16 +363,16 @@ export default function Dashboard() {
                         value={searchQuery}
                         onChange={handleSearch}
                         placeholder="Search notes..."
-                        className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none shadow-sm bg-white"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
                       />
                     </div>
 
-                    <div className="flex items-center gap-2 bg-white rounded-xl p-1.5 shadow-sm border border-gray-200">
+                    <div className="flex items-center gap-1 bg-white rounded-lg p-1 border border-gray-200">
                       <button
                         onClick={() => setSortBy('updated')}
-                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                        className={`px-3 py-2 rounded-md text-xs font-medium transition ${
                           sortBy === 'updated'
-                            ? 'bg-indigo-600 text-white shadow-sm'
+                            ? 'bg-indigo-600 text-white'
                             : 'text-gray-600 hover:text-gray-900'
                         }`}
                       >
@@ -380,9 +380,9 @@ export default function Dashboard() {
                       </button>
                       <button
                         onClick={() => setSortBy('created')}
-                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                        className={`px-3 py-2 rounded-md text-xs font-medium transition ${
                           sortBy === 'created'
-                            ? 'bg-indigo-600 text-white shadow-sm'
+                            ? 'bg-indigo-600 text-white'
                             : 'text-gray-600 hover:text-gray-900'
                         }`}
                       >
@@ -390,9 +390,9 @@ export default function Dashboard() {
                       </button>
                       <button
                         onClick={() => setSortBy('title')}
-                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                        className={`px-3 py-2 rounded-md text-xs font-medium transition ${
                           sortBy === 'title'
-                            ? 'bg-indigo-600 text-white shadow-sm'
+                            ? 'bg-indigo-600 text-white'
                             : 'text-gray-600 hover:text-gray-900'
                         }`}
                       >
@@ -423,23 +423,23 @@ export default function Dashboard() {
 
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
-            <div className="max-w-7xl mx-auto p-8">
-              <div className="mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">Folders</h1>
-                <p className="text-gray-600">Organize your notes into folders</p>
+            <div className="max-w-7xl mx-auto p-6">
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">Folders</h1>
+                <p className="text-sm text-gray-600">Organize your notes into folders</p>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-6">
                 <button
                   onClick={() => setShowCreateFolderModal(true)}
-                  className="bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-indigo-400 p-8 cursor-pointer transition-all hover:shadow-md flex flex-col items-center justify-center text-center group"
+                  className="bg-white rounded-lg border-2 border-dashed border-gray-300 hover:border-indigo-400 p-6 cursor-pointer transition-all hover:shadow-md flex flex-col items-center justify-center text-center group"
                 >
-                  <div className="w-14 h-14 bg-gray-100 group-hover:bg-indigo-50 rounded-xl flex items-center justify-center mb-3 transition">
-                    <svg className="w-7 h-7 text-gray-400 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 bg-gray-100 group-hover:bg-indigo-50 rounded-lg flex items-center justify-center mb-2 transition">
+                    <svg className="w-6 h-6 text-gray-400 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
-                  <p className="text-sm font-semibold text-gray-700 group-hover:text-gray-900">New Folder</p>
+                  <p className="text-xs font-semibold text-gray-700 group-hover:text-gray-900">New Folder</p>
                 </button>
 
                 {folders.map((folder) => {
@@ -451,25 +451,25 @@ export default function Dashboard() {
                         setSelectedFolder(folder);
                         setActiveView('folder-view');
                       }}
-                      className={`bg-gradient-to-br ${getColorClasses(folder.color)} rounded-xl p-8 cursor-pointer transition-all hover:shadow-xl flex flex-col items-center justify-center text-center group relative`}
+                      className={`bg-gradient-to-br ${getColorClasses(folder.color)} rounded-lg p-6 cursor-pointer transition-all hover:shadow-lg flex flex-col items-center justify-center text-center group relative`}
                     >
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteFolder(folder._id);
                         }}
-                        className="absolute top-2 right-2 w-6 h-6 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                        className="absolute top-2 right-2 w-5 h-5 bg-white/20 hover:bg-white/30 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
                       >
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
-                      <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-3">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-2">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
                       </div>
-                      <p className="text-sm font-bold text-white mb-1 truncate w-full">{folder.name}</p>
+                      <p className="text-xs font-bold text-white mb-0.5 truncate w-full">{folder.name}</p>
                       <p className="text-xs text-white/80">{folderNotes.length} notes</p>
                     </div>
                   );
