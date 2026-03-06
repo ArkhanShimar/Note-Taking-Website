@@ -1,24 +1,19 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
-import NotesList from '../components/NotesList';
+import NotesGrid from '../components/NotesGrid';
 import NoteEditor from '../components/NoteEditor';
-import FolderGrid from '../components/FolderGrid';
 import { noteService } from '../services/noteService';
-import { folderService } from '../services/folderService';
 
 export default function Dashboard() {
   const [notes, setNotes] = useState([]);
-  const [folders, setFolders] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeView, setActiveView] = useState('all');
-  const [timeFilter, setTimeFilter] = useState('all');
-  const [showFolders, setShowFolders] = useState(true);
+  const [activeView, setActiveView] = useState('all-notes');
+  const [sortBy, setSortBy] = useState('updated');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadNotes();
-    loadFolders();
   }, []);
 
   const loadNotes = async () => {
@@ -32,36 +27,13 @@ export default function Dashboard() {
     }
   };
 
-  const loadFolders = async () => {
-    try {
-      const data = await folderService.getFolders();
-      setFolders(data);
-    } catch (error) {
-      console.error('Failed to load folders:', error);
-    }
-  };
-
   const handleCreateNote = async () => {
     try {
-      const folderId = activeView.startsWith('folder-') ? activeView.replace('folder-', '') : null;
-      const newNote = await noteService.createNote('Untitled Note', '', folderId);
+      const newNote = await noteService.createNote('Untitled Note', '');
       setNotes([newNote, ...notes]);
       setSelectedNote(newNote);
-      setShowFolders(false);
     } catch (error) {
       console.error('Failed to create note:', error);
-    }
-  };
-
-  const handleCreateFolder = async () => {
-    const name = prompt('Enter folder name:');
-    if (!name) return;
-
-    try {
-      const newFolder = await folderService.createFolder(name);
-      setFolders([...folders, { ...newFolder, noteCount: 0 }]);
-    } catch (error) {
-      console.error('Failed to create folder:', error);
     }
   };
 
@@ -83,181 +55,181 @@ export default function Dashboard() {
       try {
         const results = await noteService.searchNotes(query);
         setNotes(results);
-        setShowFolders(false);
       } catch (error) {
         console.error('Search failed:', error);
       }
     } else {
       loadNotes();
-      setShowFolders(true);
     }
   };
 
-  const handleSelectFolder = (folderId) => {
-    setActiveView(`folder-${folderId}`);
-    setShowFolders(false);
+  const handleBackToGrid = () => {
+    setSelectedNote(null);
   };
 
-  const filterNotesByTime = (notes) => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    return notes.filter(note => {
-      const noteDate = new Date(note.updatedAt);
-      if (timeFilter === 'today') return noteDate >= today;
-      if (timeFilter === 'week') return noteDate >= weekAgo;
-      if (timeFilter === 'month') return noteDate >= monthAgo;
-      return true;
-    });
-  };
-
-  const getFilteredNotes = () => {
-    let filtered = notes;
-
-    if (activeView === 'shared') {
-      filtered = notes.filter(note => note.collaborators && note.collaborators.length > 0);
-    } else if (activeView.startsWith('folder-')) {
-      const folderId = activeView.replace('folder-', '');
-      filtered = notes.filter(note => note.folder === folderId);
+  const sortedNotes = [...notes].sort((a, b) => {
+    if (sortBy === 'updated') {
+      return new Date(b.updatedAt) - new Date(a.updatedAt);
+    } else if (sortBy === 'created') {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    } else if (sortBy === 'title') {
+      return (a.title || 'Untitled').localeCompare(b.title || 'Untitled');
     }
-
-    return filterNotesByTime(filtered);
-  };
+    return 0;
+  });
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-slate-600">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 font-medium">Loading your notes...</p>
+        </div>
       </div>
     );
   }
 
-  const filteredNotes = getFilteredNotes();
+  if (selectedNote) {
+    return (
+      <div className="flex h-screen bg-gradient-to-br from-slate-100 to-slate-50">
+        <Sidebar
+          onCreateNote={handleCreateNote}
+          activeView={activeView}
+          setActiveView={setActiveView}
+        />
+        <div className="flex-1 flex flex-col">
+          <div className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm">
+            <button
+              onClick={handleBackToGrid}
+              className="flex items-center gap-2 text-slate-600 hover:text-slate-800 font-medium transition"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Notes
+            </button>
+          </div>
+          <NoteEditor
+            note={selectedNote}
+            onUpdate={handleUpdateNote}
+            onDelete={handleDeleteNote}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 to-slate-50">
       <Sidebar
         onCreateNote={handleCreateNote}
         activeView={activeView}
         setActiveView={setActiveView}
-        folders={folders}
-        onCreateFolder={handleCreateFolder}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="bg-white border-b border-slate-200 px-8 py-4">
+        <div className="bg-white border-b border-slate-200 px-8 py-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-slate-800">
-              {activeView === 'shared' ? 'Shared Notes' : 
-               activeView.startsWith('folder-') ? folders.find(f => f._id === activeView.replace('folder-', ''))?.name || 'Folder' :
-               'My Notes'}
-            </h1>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setTimeFilter('today')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition ${
-                  timeFilter === 'today'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                Today
-              </button>
-              <button
-                onClick={() => setTimeFilter('week')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition ${
-                  timeFilter === 'week'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                This Week
-              </button>
-              <button
-                onClick={() => setTimeFilter('month')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition ${
-                  timeFilter === 'month'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                This Month
-              </button>
-              <button
-                onClick={() => setTimeFilter('all')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition ${
-                  timeFilter === 'all'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                All
-              </button>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-800">
+                {activeView === 'all-notes' ? 'All Notes' : 'Shared Notes'}
+              </h1>
+              <p className="text-slate-500 mt-1">{sortedNotes.length} {sortedNotes.length === 1 ? 'note' : 'notes'}</p>
             </div>
           </div>
 
-          <div className="relative max-w-2xl">
-            <svg
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-2xl">
+              <svg
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearch}
+                placeholder="Search notes..."
+                className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm"
               />
-            </svg>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={handleSearch}
-              placeholder="Search notes..."
-              className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm"
-            />
+            </div>
+
+            <div className="flex items-center gap-2 bg-slate-100 rounded-xl p-1">
+              <button
+                onClick={() => setSortBy('updated')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  sortBy === 'updated'
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-800'
+                }`}
+              >
+                Last Updated
+              </button>
+              <button
+                onClick={() => setSortBy('created')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  sortBy === 'created'
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-800'
+                }`}
+              >
+                Date Created
+              </button>
+              <button
+                onClick={() => setSortBy('title')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  sortBy === 'title'
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-800'
+                }`}
+              >
+                Title
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {showFolders && activeView === 'all' ? (
-            <FolderGrid folders={folders} onSelectFolder={handleSelectFolder} />
-          ) : (
-            <div className="flex h-full">
-              <div className="w-80 bg-white border-r border-slate-200 flex flex-col">
-                <div className="px-6 py-4 border-b border-slate-200">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-600">{filteredNotes.length} {filteredNotes.length === 1 ? 'note' : 'notes'}</p>
-                    <button
-                      onClick={() => setShowFolders(true)}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      View Folders
-                    </button>
-                  </div>
-                </div>
-                <NotesList
-                  notes={filteredNotes}
-                  selectedNote={selectedNote}
-                  onSelectNote={(note) => {
-                    setSelectedNote(note);
-                    setShowFolders(false);
-                  }}
-                  activeView={activeView}
-                />
-              </div>
+        <div className="flex-1 overflow-y-auto p-8">
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-slate-700 mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Notes
+            </h2>
+            <NotesGrid
+              notes={sortedNotes}
+              onSelectNote={setSelectedNote}
+              activeView={activeView}
+            />
+          </div>
 
-              <NoteEditor
-                note={selectedNote}
-                onUpdate={handleUpdateNote}
-                onDelete={handleDeleteNote}
-                folders={folders}
-              />
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-slate-700 mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+              Folders
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              <div className="bg-white rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-400 p-6 cursor-pointer transition-all hover:shadow-md flex flex-col items-center justify-center text-center group">
+                <div className="w-12 h-12 bg-slate-100 group-hover:bg-blue-50 rounded-xl flex items-center justify-center mb-3 transition">
+                  <svg className="w-6 h-6 text-slate-400 group-hover:text-blue-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-slate-600 group-hover:text-slate-800">New Folder</p>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
