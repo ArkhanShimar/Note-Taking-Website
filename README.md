@@ -37,13 +37,30 @@ cp .env.example .env
 npm run dev
 ```
 
-The backend will run on `http://localhost:5000`
+The backend will run on `http://localhost:5001`
 
-Test the health check endpoint: `http://localhost:5000/health`
+Test the health check endpoint: `http://localhost:5001/health`
 
 ### Frontend Setup
 
-Coming soon...
+1. Navigate to the frontend folder:
+```bash
+cd frontend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+The frontend will run on `http://localhost:5173`
+
+Open your browser and visit `http://localhost:5173` to use the app!
 
 ## Features
 
