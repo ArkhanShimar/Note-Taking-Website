@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeView, setActiveView] = useState('dashboard');
   const [sortBy, setSortBy] = useState('updated');
+  const [dateFilter, setDateFilter] = useState('all'); // 'all', 'today', 'week', 'month'
   const [loading, setLoading] = useState(true);
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -240,6 +241,34 @@ export default function Dashboard() {
     return 0;
   });
 
+  // Filter notes by date
+  const filterNotesByDate = (notesToFilter) => {
+    if (dateFilter === 'all') return notesToFilter;
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    return notesToFilter.filter(note => {
+      const noteDate = new Date(note.updatedAt);
+      
+      if (dateFilter === 'today') {
+        return noteDate >= today;
+      } else if (dateFilter === 'week') {
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return noteDate >= weekAgo;
+      } else if (dateFilter === 'month') {
+        const monthAgo = new Date(today);
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        return noteDate >= monthAgo;
+      }
+      
+      return true;
+    });
+  };
+
+  const filteredNotes = filterNotesByDate(sortedNotes);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
@@ -292,7 +321,7 @@ export default function Dashboard() {
       case 'dashboard':
         return (
           <DashboardHome
-            notes={sortedNotes}
+            notes={filteredNotes}
             onSelectNote={setSelectedNote}
             onCreateNote={handleCreateNote}
           />
@@ -301,8 +330,8 @@ export default function Dashboard() {
       case 'all-notes':
       case 'shared':
         const displayNotes = activeView === 'shared' 
-          ? sortedNotes.filter(note => note.collaborators && note.collaborators.length > 0)
-          : sortedNotes;
+          ? filteredNotes.filter(note => note.collaborators && note.collaborators.length > 0)
+          : filteredNotes;
 
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
@@ -355,9 +384,9 @@ export default function Dashboard() {
 
                   <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
                     <button
-                      onClick={() => setSortBy('updated')}
+                      onClick={() => setDateFilter('all')}
                       className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
-                        sortBy === 'updated'
+                        dateFilter === 'all'
                           ? 'bg-white text-gray-900 shadow-sm'
                           : 'text-gray-600 hover:text-gray-900'
                       }`}
@@ -365,9 +394,9 @@ export default function Dashboard() {
                       All
                     </button>
                     <button
-                      onClick={() => setSortBy('created')}
+                      onClick={() => setDateFilter('today')}
                       className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
-                        sortBy === 'created'
+                        dateFilter === 'today'
                           ? 'bg-white text-gray-900 shadow-sm'
                           : 'text-gray-600 hover:text-gray-900'
                       }`}
@@ -375,9 +404,9 @@ export default function Dashboard() {
                       Today
                     </button>
                     <button
-                      onClick={() => setSortBy('title')}
+                      onClick={() => setDateFilter('week')}
                       className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
-                        sortBy === 'title'
+                        dateFilter === 'week'
                           ? 'bg-white text-gray-900 shadow-sm'
                           : 'text-gray-600 hover:text-gray-900'
                       }`}
@@ -385,7 +414,12 @@ export default function Dashboard() {
                       This Week
                     </button>
                     <button
-                      className="px-4 py-2 rounded-xl text-xs font-medium text-gray-600 hover:text-gray-900 transition"
+                      onClick={() => setDateFilter('month')}
+                      className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
+                        dateFilter === 'month'
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
                     >
                       This Month
                     </button>
@@ -859,31 +893,31 @@ export default function Dashboard() {
                   <label className="block text-sm font-semibold text-gray-700">
                     Select notes to share ({selectedNotesForSharing.length} selected)
                   </label>
-                  {sortedNotes.length > 0 && (
+                  {filteredNotes.length > 0 && (
                     <button
                       type="button"
                       onClick={() => {
-                        if (selectedNotesForSharing.length === sortedNotes.length) {
+                        if (selectedNotesForSharing.length === filteredNotes.length) {
                           setSelectedNotesForSharing([]);
                         } else {
-                          setSelectedNotesForSharing(sortedNotes.map(n => n._id));
+                          setSelectedNotesForSharing(filteredNotes.map(n => n._id));
                         }
                       }}
                       className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                     >
-                      {selectedNotesForSharing.length === sortedNotes.length ? 'Deselect All' : 'Select All'}
+                      {selectedNotesForSharing.length === filteredNotes.length ? 'Deselect All' : 'Select All'}
                     </button>
                   )}
                 </div>
 
-                {sortedNotes.length === 0 ? (
+                {filteredNotes.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <p>No notes available to share. Create a note first.</p>
                   </div>
                 ) : (
                   <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl">
                     <div className="divide-y divide-gray-200">
-                      {sortedNotes.map((note) => (
+                      {filteredNotes.map((note) => (
                         <div
                           key={note._id}
                           onClick={() => toggleNoteSelection(note._id)}

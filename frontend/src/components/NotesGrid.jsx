@@ -8,11 +8,36 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
     const now = new Date();
     const diff = now - d;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor(diff / (1000 * 60));
 
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Yesterday';
-    if (days < 7) return `${days} days ago`;
-    return d.toLocaleDateString();
+    // If less than 1 minute ago
+    if (minutes < 1) return 'Just now';
+    
+    // If less than 1 hour ago
+    if (minutes < 60) return `${minutes} min ago`;
+    
+    // If less than 24 hours ago
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    
+    // If today
+    if (days === 0) {
+      return `Today at ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+    }
+    
+    // If yesterday
+    if (days === 1) {
+      return `Yesterday at ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+    }
+    
+    // If within the last week
+    if (days < 7) {
+      return `${days} days ago`;
+    }
+    
+    // Otherwise show full date with time
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + 
+           ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
 
   const stripHtml = (html) => {
@@ -48,21 +73,6 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
             className="group bg-white rounded-3xl border border-gray-200 p-5 cursor-pointer transition-all hover:shadow-xl hover:shadow-indigo-100 hover:border-indigo-300 hover:-translate-y-1 relative"
           >
             
-            {showRemoveButton && onRemoveFromFolder && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveFromFolder(note._id);
-                }}
-                className="absolute top-3 right-3 w-7 h-7 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                title="Remove from folder"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-
             <div>
               <div className="flex items-start justify-between mb-3">
                 <h3 className="font-bold text-gray-900 text-lg truncate flex-1 group-hover:text-indigo-600 transition pr-2">
@@ -88,6 +98,20 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
+                  {showRemoveButton && onRemoveFromFolder && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveFromFolder(note._id);
+                      }}
+                      className="w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                      title="Remove from folder"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </div>
               
@@ -158,7 +182,15 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
             {/* Footer */}
             <div className="bg-gray-50 px-8 py-4 flex items-center justify-between border-t border-gray-200">
               <div className="text-sm text-gray-600">
-                Created {new Date(previewNote.createdAt).toLocaleDateString()}
+                Created {new Date(previewNote.createdAt).toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })} at {new Date(previewNote.createdAt).toLocaleTimeString('en-US', { 
+                  hour: 'numeric', 
+                  minute: '2-digit', 
+                  hour12: true 
+                })}
               </div>
               <div className="flex gap-3">
                 <button

@@ -121,17 +121,23 @@ exports.searchNotes = async (req, res) => {
       return res.status(400).json({ message: 'Search query is required' });
     }
 
+    // Use regex for partial matching in title and content
+    const searchRegex = new RegExp(q, 'i'); // 'i' for case-insensitive
+
     const notes = await Note.find({
       $or: [
         { owner: req.user.id },
         { collaborators: req.user.id }
       ],
       deleted: false,
-      $text: { $search: q }
+      $or: [
+        { title: searchRegex },
+        { content: searchRegex }
+      ]
     })
     .populate('owner', 'name email')
     .populate('collaborators', 'name email')
-    .sort({ score: { $meta: 'textScore' } });
+    .sort({ updatedAt: -1 });
 
     res.json(notes);
   } catch (error) {
