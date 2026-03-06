@@ -71,7 +71,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-gradient-to-br from-slate-100 to-slate-50">
       <Sidebar
         onCreateNote={handleCreateNote}
         activeView={activeView}
@@ -79,10 +79,10 @@ export default function Dashboard() {
       />
 
       <div className="flex-1 flex flex-col">
-        <div className="bg-white border-b border-slate-200 px-6 py-4">
-          <div className="relative">
+        <div className="bg-white border-b border-slate-200 px-6 py-5 shadow-sm">
+          <div className="relative max-w-2xl">
             <svg
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -99,18 +99,18 @@ export default function Dashboard() {
               value={searchQuery}
               onChange={handleSearch}
               placeholder="Search notes..."
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm"
             />
           </div>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
-          <div className="w-80 bg-white border-r border-slate-200 flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-200">
-              <h2 className="text-lg font-semibold text-slate-800">
+          <div className="w-80 bg-white border-r border-slate-200 flex flex-col shadow-sm">
+            <div className="px-6 py-5 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+              <h2 className="text-lg font-bold text-slate-800">
                 {activeView === 'my-notes' ? 'My Notes' : 'Shared Notes'}
               </h2>
-              <p className="text-sm text-slate-500 mt-1">{notes.length} notes</p>
+              <p className="text-sm text-slate-500 mt-1">{notes.length} {notes.length === 1 ? 'note' : 'notes'}</p>
             </div>
             <NotesList
               notes={notes}
