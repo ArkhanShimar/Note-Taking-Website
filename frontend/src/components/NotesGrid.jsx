@@ -1,4 +1,4 @@
-export default function NotesGrid({ notes, onSelectNote }) {
+export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, showRemoveButton }) {
   const formatDate = (date) => {
     const d = new Date(date);
     const now = new Date();
@@ -39,31 +39,49 @@ export default function NotesGrid({ notes, onSelectNote }) {
       {notes.map((note) => (
         <div
           key={note._id}
-          onClick={() => onSelectNote(note)}
-          className="group bg-white rounded-xl border border-gray-200 p-6 cursor-pointer transition-all hover:shadow-xl hover:border-indigo-300 hover:-translate-y-1"
+          className="group bg-white rounded-xl border border-gray-200 p-6 transition-all hover:shadow-xl hover:border-indigo-300 hover:-translate-y-1 relative"
         >
-          <div className="flex items-start justify-between mb-4">
-            <h3 className="font-bold text-gray-900 text-lg truncate flex-1 group-hover:text-indigo-600 transition">
-              {note.title || 'Untitled'}
-            </h3>
-            {note.collaborators && note.collaborators.length > 0 && (
-              <div className="ml-2 flex-shrink-0 bg-purple-100 rounded-lg p-2">
-                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
+          {showRemoveButton && onRemoveFromFolder && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveFromFolder(note._id);
+              }}
+              className="absolute top-3 right-3 w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10"
+              title="Remove from folder"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+          <div
+            onClick={() => onSelectNote(note)}
+            className="cursor-pointer"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <h3 className="font-bold text-gray-900 text-lg truncate flex-1 group-hover:text-indigo-600 transition">
+                {note.title || 'Untitled'}
+              </h3>
+              {note.collaborators && note.collaborators.length > 0 && (
+                <div className="ml-2 flex-shrink-0 bg-purple-100 rounded-lg p-2">
+                  <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            
+            <p className="text-sm text-gray-600 line-clamp-4 mb-4 leading-relaxed min-h-[80px]">
+              {stripHtml(note.content) || 'No content'}
+            </p>
+            
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              <span className="text-xs text-gray-500 font-medium">{formatDate(note.updatedAt)}</span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-xs text-gray-500">Saved</span>
               </div>
-            )}
-          </div>
-          
-          <p className="text-sm text-gray-600 line-clamp-4 mb-4 leading-relaxed min-h-[80px]">
-            {stripHtml(note.content) || 'No content'}
-          </p>
-          
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-            <span className="text-xs text-gray-500 font-medium">{formatDate(note.updatedAt)}</span>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-xs text-gray-500">Saved</span>
             </div>
           </div>
         </div>

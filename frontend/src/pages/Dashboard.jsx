@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar';
 import DashboardHome from '../components/DashboardHome';
 import NotesGrid from '../components/NotesGrid';
 import NoteEditor from '../components/NoteEditor';
+import Toast from '../components/Toast';
 import { noteService } from '../services/noteService';
 import { folderService } from '../services/folderService';
 import { useAuth } from '../context/AuthContext';
@@ -20,6 +21,11 @@ export default function Dashboard() {
   const [newFolderColor, setNewFolderColor] = useState('indigo');
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [showAddToFolderModal, setShowAddToFolderModal] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [showShareNotesModal, setShowShareNotesModal] = useState(false);
+  const [selectedNotesForSharing, setSelectedNotesForSharing] = useState([]);
+  const [shareEmail, setShareEmail] = useState('');
+  const [shareError, setShareError] = useState('');
 
   useEffect(() => {
     loadNotes();
@@ -56,21 +62,23 @@ export default function Dashboard() {
       setNewFolderName('');
       setNewFolderColor('indigo');
       setShowCreateFolderModal(false);
+      setToast({ message: 'Folder created successfully!', type: 'success' });
     } catch (error) {
       console.error('Failed to create folder:', error);
       const errorMessage = error.response?.data?.message || 'Failed to create folder. Please try again.';
-      alert(errorMessage);
+      setToast({ message: errorMessage, type: 'error' });
     }
   };
 
   const handleDeleteFolder = async (folderId) => {
-    if (!window.confirm('Delete this folder? Notes inside will not be deleted.')) return;
-
     try {
       await folderService.deleteFolder(folderId);
       setFolders(folders.filter(f => f._id !== folderId));
+      setToast({ message: 'Folder deleted successfully!', type: 'success' });
     } catch (error) {
       console.error('Failed to delete folder:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to delete folder. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
     }
   };
 
@@ -79,10 +87,11 @@ export default function Dashboard() {
       const updated = await noteService.updateNote(noteId, undefined, undefined, folderId);
       setNotes(notes.map(n => n._id === noteId ? updated : n));
       setShowAddToFolderModal(false);
+      setToast({ message: 'Note added to folder successfully!', type: 'success' });
     } catch (error) {
       console.error('Failed to add note to folder:', error);
       const errorMessage = error.response?.data?.message || 'Failed to add note to folder. Please try again.';
-      alert(errorMessage);
+      setToast({ message: errorMessage, type: 'error' });
     }
   };
 
@@ -90,8 +99,11 @@ export default function Dashboard() {
     try {
       const updated = await noteService.updateNote(noteId, undefined, undefined, null);
       setNotes(notes.map(n => n._id === noteId ? updated : n));
+      setToast({ message: 'Note removed from folder!', type: 'success' });
     } catch (error) {
       console.error('Failed to remove note from folder:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to remove note from folder. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
     }
   };
 
@@ -100,9 +112,79 @@ export default function Dashboard() {
       const newNote = await noteService.createNote('Untitled Note', '');
       setNotes([newNote, ...notes]);
       setSelectedNote(newNote);
+      setToast({ message: 'Note created successfully!', type: 'success' });
     } catch (error) {
       console.error('Failed to create note:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to create note. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
     }
+  };
+
+  const handleShareNotes = async (e) => {
+    e.preventDefault();
+    setShareError('');
+    
+    if (!shareEmail.trim() || selectedNotesForSharing.length === 0) {
+      setShareError('Please select notes and enter an email address');
+      return;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+    let userNotFoundError = false;
+    let lastError = '';
+
+    for (const noteId of selectedNotesForSharing) {
+      try {
+        const updated = await noteService.addCollaborator(noteId, shareEmail);
+        setNotes(notes.map(n => n._id === noteId ? updated : n));
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to share note ${noteId}:`, error);
+        failCount++;
+        lastError = error.response?.data?.message || 'Failed to share note';
+        
+        // Check if it's a user not found error
+        if (lastError.toLowerCase().includes('user not found') || 
+            lastError.toLowerCase().includes('not found') ||
+            lastError.toLowerCase().includes('does not exist')) {
+          userNotFoundError = true;
+        }
+      }
+    }
+
+    // If user not found, keep modal open and show error
+    if (userNotFoundError && successCount === 0) {
+      setShareError('User not found. Please check the email address and try again.');
+      return;
+    }
+
+    // If there were other errors but some succeeded
+    if (failCount > 0 && successCount > 0) {
+      setShareError(`Shared ${successCount} notes successfully, but ${failCount} failed. ${lastError}`);
+      return;
+    }
+
+    // If all failed with non-user-not-found errors
+    if (failCount > 0 && successCount === 0 && !userNotFoundError) {
+      setShareError(lastError || 'Failed to share notes. Please try again.');
+      return;
+    }
+
+    // Success - close modal and show toast
+    setShowShareNotesModal(false);
+    setSelectedNotesForSharing([]);
+    setShareEmail('');
+    setShareError('');
+    setToast({ message: `Successfully shared ${successCount} ${successCount === 1 ? 'note' : 'notes'}!`, type: 'success' });
+  };
+
+  const toggleNoteSelection = (noteId) => {
+    setSelectedNotesForSharing(prev => 
+      prev.includes(noteId) 
+        ? prev.filter(id => id !== noteId)
+        : [...prev, noteId]
+    );
   };
 
   const handleUpdateNote = (updatedNote) => {
@@ -197,6 +279,7 @@ export default function Dashboard() {
             note={selectedNote}
             onUpdate={handleUpdateNote}
             onDelete={handleDeleteNote}
+            folders={folders}
           />
         </div>
       </div>
@@ -224,70 +307,106 @@ export default function Dashboard() {
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
             <div className="max-w-7xl mx-auto p-8">
-              <div className="mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                  {activeView === 'all-notes' ? 'All Notes' : 'Shared Notes'}
-                </h1>
-                <p className="text-gray-600">{displayNotes.length} {displayNotes.length === 1 ? 'note' : 'notes'}</p>
+              <div className="mb-8 flex items-center justify-between">
+                <div>
+                  <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                    {activeView === 'all-notes' ? 'All Notes' : 'Shared Notes'}
+                  </h1>
+                  <p className="text-gray-600">{displayNotes.length} {displayNotes.length === 1 ? 'note' : 'notes'}</p>
+                </div>
+                {activeView === 'shared' && (
+                  <button
+                    onClick={() => setShowShareNotesModal(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                    Share Notes
+                  </button>
+                )}
               </div>
 
-              <div className="flex items-center gap-4 mb-8">
-                <div className="relative flex-1 max-w-2xl">
-                  <svg
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              {displayNotes.length === 0 && activeView === 'shared' ? (
+                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-12 text-center">
+                  <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No shared notes yet</h3>
+                  <p className="text-gray-600 mb-6">Start collaborating by sharing your notes with others</p>
+                  <button
+                    onClick={() => setShowShareNotesModal(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-5 rounded-xl transition inline-flex items-center gap-2"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    placeholder="Search notes..."
-                    className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none shadow-sm bg-white"
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                    Share Your First Note
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="relative flex-1 max-w-2xl">
+                      <svg
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        placeholder="Search notes..."
+                        className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none shadow-sm bg-white"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-white rounded-xl p-1.5 shadow-sm border border-gray-200">
+                      <button
+                        onClick={() => setSortBy('updated')}
+                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                          sortBy === 'updated'
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        Recent
+                      </button>
+                      <button
+                        onClick={() => setSortBy('created')}
+                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                          sortBy === 'created'
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        Created
+                      </button>
+                      <button
+                        onClick={() => setSortBy('title')}
+                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                          sortBy === 'title'
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        Title
+                      </button>
+                    </div>
+                  </div>
+
+                  <NotesGrid
+                    notes={displayNotes}
+                    onSelectNote={setSelectedNote}
                   />
-                </div>
-
-                <div className="flex items-center gap-2 bg-white rounded-xl p-1.5 shadow-sm border border-gray-200">
-                  <button
-                    onClick={() => setSortBy('updated')}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
-                      sortBy === 'updated'
-                        ? 'bg-indigo-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Recent
-                  </button>
-                  <button
-                    onClick={() => setSortBy('created')}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
-                      sortBy === 'created'
-                        ? 'bg-indigo-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Created
-                  </button>
-                  <button
-                    onClick={() => setSortBy('title')}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
-                      sortBy === 'title'
-                        ? 'bg-indigo-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Title
-                  </button>
-                </div>
-              </div>
-
-              <NotesGrid
-                notes={displayNotes}
-                onSelectNote={setSelectedNote}
-              />
+                </>
+              )}
             </div>
           </div>
         );
@@ -511,15 +630,32 @@ export default function Dashboard() {
                     <p className="text-gray-600 mt-1">{folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowAddToFolderModal(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add Note
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowAddToFolderModal(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Note
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Delete "${selectedFolder.name}" folder? Notes inside will not be deleted.`)) {
+                        handleDeleteFolder(selectedFolder._id);
+                        setSelectedFolder(null);
+                        setActiveView('folders');
+                      }
+                    }}
+                    className="bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Folder
+                  </button>
+                </div>
               </div>
 
               {folderNotes.length === 0 ? (
@@ -542,6 +678,8 @@ export default function Dashboard() {
                 <NotesGrid
                   notes={folderNotes}
                   onSelectNote={setSelectedNote}
+                  onRemoveFromFolder={handleRemoveNoteFromFolder}
+                  showRemoveButton={true}
                 />
               )}
             </div>
@@ -650,6 +788,161 @@ export default function Dashboard() {
         onCreateNote={handleCreateNote}
       />
       {renderContent()}
+
+      {/* Share Notes Modal */}
+      {showShareNotesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-8 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Share Notes</h3>
+              <button
+                onClick={() => {
+                  setShowShareNotesModal(false);
+                  setSelectedNotesForSharing([]);
+                  setShareEmail('');
+                  setShareError('');
+                }}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {shareError && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-start gap-3">
+                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p>{shareError}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleShareNotes}>
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Share with (email address)
+                </label>
+                <input
+                  type="email"
+                  value={shareEmail}
+                  onChange={(e) => {
+                    setShareEmail(e.target.value);
+                    setShareError(''); // Clear error when user types
+                  }}
+                  placeholder="colleague@example.com"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                  required
+                />
+              </div>
+
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Select notes to share ({selectedNotesForSharing.length} selected)
+                  </label>
+                  {sortedNotes.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedNotesForSharing.length === sortedNotes.length) {
+                          setSelectedNotesForSharing([]);
+                        } else {
+                          setSelectedNotesForSharing(sortedNotes.map(n => n._id));
+                        }
+                      }}
+                      className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                    >
+                      {selectedNotesForSharing.length === sortedNotes.length ? 'Deselect All' : 'Select All'}
+                    </button>
+                  )}
+                </div>
+
+                {sortedNotes.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>No notes available to share. Create a note first.</p>
+                  </div>
+                ) : (
+                  <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl">
+                    <div className="divide-y divide-gray-200">
+                      {sortedNotes.map((note) => (
+                        <div
+                          key={note._id}
+                          onClick={() => toggleNoteSelection(note._id)}
+                          className={`flex items-center gap-4 p-4 cursor-pointer transition ${
+                            selectedNotesForSharing.includes(note._id)
+                              ? 'bg-indigo-50 border-l-4 border-indigo-600'
+                              : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition ${
+                            selectedNotesForSharing.includes(note._id)
+                              ? 'bg-indigo-600 border-indigo-600'
+                              : 'border-gray-300'
+                          }`}>
+                            {selectedNotesForSharing.includes(note._id) && (
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
+                          <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 truncate">{note.title || 'Untitled'}</p>
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <span>{new Date(note.updatedAt).toLocaleDateString()}</span>
+                              {note.collaborators && note.collaborators.length > 0 && (
+                                <>
+                                  <span>•</span>
+                                  <span className="flex items-center gap-1">
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    {note.collaborators.length} shared
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowShareNotesModal(false);
+                    setSelectedNotesForSharing([]);
+                    setShareEmail('');
+                    setShareError('');
+                  }}
+                  className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={selectedNotesForSharing.length === 0}
+                  className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Share {selectedNotesForSharing.length > 0 && `(${selectedNotesForSharing.length})`}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }

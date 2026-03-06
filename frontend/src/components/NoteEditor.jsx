@@ -3,6 +3,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { noteService } from '../services/noteService';
 import { useAuth } from '../context/AuthContext';
+import Toast from './Toast';
 
 export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
   const [title, setTitle] = useState('');
@@ -11,6 +12,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showFolderMenu, setShowFolderMenu] = useState(false);
   const [collaboratorEmail, setCollaboratorEmail] = useState('');
+  const [toast, setToast] = useState(null);
   const { user } = useAuth();
   const quillRef = useRef(null);
 
@@ -28,10 +30,11 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
     try {
       const updated = await noteService.updateNote(note._id, title, content, note.folder);
       onUpdate(updated);
+      setToast({ message: 'Note saved successfully!', type: 'success' });
     } catch (error) {
       console.error('Failed to save note:', error);
       const errorMessage = error.response?.data?.message || 'Failed to save note. Please try again.';
-      alert(errorMessage);
+      setToast({ message: errorMessage, type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -44,19 +47,25 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
       const updated = await noteService.updateNote(note._id, title, content, folderId);
       onUpdate(updated);
       setShowFolderMenu(false);
+      setToast({ message: 'Note moved successfully!', type: 'success' });
     } catch (error) {
       console.error('Failed to move note:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to move note. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
     }
   };
 
   const handleDelete = async () => {
-    if (!note || !window.confirm('Are you sure you want to delete this note?')) return;
+    if (!note) return;
 
     try {
       await noteService.deleteNote(note._id);
       onDelete(note._id);
+      setToast({ message: 'Note deleted successfully!', type: 'success' });
     } catch (error) {
       console.error('Failed to delete note:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to delete note. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
     }
   };
 
@@ -68,21 +77,22 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
       const updated = await noteService.addCollaborator(note._id, collaboratorEmail);
       onUpdate(updated);
       setCollaboratorEmail('');
-      alert('Collaborator added successfully!');
+      setToast({ message: 'Collaborator added successfully!', type: 'success' });
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Failed to add collaborator. Please try again.';
-      alert(errorMessage);
+      setToast({ message: errorMessage, type: 'error' });
     }
   };
 
   const handleRemoveCollaborator = async (collaboratorId) => {
-    if (!window.confirm('Remove this collaborator?')) return;
-
     try {
       const updated = await noteService.removeCollaborator(note._id, collaboratorId);
       onUpdate(updated);
+      setToast({ message: 'Collaborator removed successfully!', type: 'success' });
     } catch (error) {
       console.error('Failed to remove collaborator:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to remove collaborator. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
     }
   };
 
@@ -314,6 +324,8 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
           </div>
         </div>
       )}
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }
