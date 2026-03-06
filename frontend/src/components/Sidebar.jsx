@@ -18,7 +18,7 @@ export default function Sidebar({ activeView, setActiveView, onCreateNote }) {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+    <div className="w-72 bg-white border-r border-gray-200 flex flex-col h-screen">
       {/* Logo */}
       <div className="p-5">
         <div className="flex items-center gap-3 mb-5">
@@ -36,9 +36,9 @@ export default function Sidebar({ activeView, setActiveView, onCreateNote }) {
         {/* New Note Button */}
         <button
           onClick={onCreateNote}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 text-sm"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
           </svg>
           Create New Note
