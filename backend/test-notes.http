@@ -1,0 +1,46 @@
+@token = YOUR_TOKEN_HERE
+
+### Create a new note
+POST http://localhost:5001/api/notes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "My First Note",
+  "content": "<h1>Welcome</h1><p>This is my first note with <strong>rich text</strong>!</p>"
+}
+
+### Get all notes
+GET http://localhost:5001/api/notes
+Authorization: Bearer {{token}}
+
+### Get a specific note
+GET http://localhost:5001/api/notes/NOTE_ID_HERE
+Authorization: Bearer {{token}}
+
+### Update a note
+PUT http://localhost:5001/api/notes/NOTE_ID_HERE
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Title",
+  "content": "<h1>Updated Content</h1><p>This note has been updated.</p>"
+}
+
+### Search notes
+GET http://localhost:5001/api/notes/search?q=welcome
+Authorization: Bearer {{token}}
+
+### Add collaborator
+POST http://localhost:5001/api/notes/NOTE_ID_HERE/collaborators
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "collaborator@example.com"
+}
+
+### Delete a note (soft delete)
+DELETE http://localhost:5001/api/notes/NOTE_ID_HERE
+Authorization: Bearer {{token}}
