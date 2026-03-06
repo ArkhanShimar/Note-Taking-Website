@@ -26,13 +26,31 @@ exports.getNotes = async (req, res) => {
         { owner: req.user.id },
         { collaborators: req.user.id }
       ],
-      deleted: false
+      deleted: false,
+      isDraft: false // Only get published notes
     })
     .populate('owner', 'name email')
     .populate('collaborators', 'name email')
     .sort({ updatedAt: -1 });
 
     res.json(notes);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.getDrafts = async (req, res) => {
+  try {
+    const drafts = await Note.find({
+      owner: req.user.id, // Only owner can see drafts
+      deleted: false,
+      isDraft: true
+    })
+    .populate('owner', 'name email')
+    .populate('collaborators', 'name email')
+    .sort({ updatedAt: -1 });
+
+    res.json(drafts);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -63,7 +81,7 @@ exports.getNoteById = async (req, res) => {
 
 exports.updateNote = async (req, res) => {
   try {
-    const { title, content, folder } = req.body;
+    const { title, content, folder, isDraft } = req.body;
 
     const note = await Note.findOne({
       _id: req.params.id,
@@ -81,6 +99,7 @@ exports.updateNote = async (req, res) => {
     if (title !== undefined) note.title = title;
     if (content !== undefined) note.content = content;
     if (folder !== undefined) note.folder = folder;
+    if (isDraft !== undefined) note.isDraft = isDraft;
 
     await note.save();
     await note.populate('owner', 'name email');

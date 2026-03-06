@@ -6,6 +6,11 @@ export const noteService = {
     return response.data;
   },
 
+  async getDrafts() {
+    const response = await api.get('/notes/drafts');
+    return response.data;
+  },
+
   async getNoteById(id) {
     const response = await api.get(`/notes/${id}`);
     return response.data;
@@ -16,8 +21,8 @@ export const noteService = {
     return response.data;
   },
 
-  async updateNote(id, title, content, folder) {
-    const response = await api.put(`/notes/${id}`, { title, content, folder });
+  async updateNote(id, title, content, folder, isDraft) {
+    const response = await api.put(`/notes/${id}`, { title, content, folder, isDraft });
     return response.data;
   },
 

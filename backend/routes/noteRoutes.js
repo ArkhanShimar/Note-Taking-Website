@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 
 router.post('/', auth, noteController.createNote);
 router.get('/', auth, noteController.getNotes);
+router.get('/drafts', auth, noteController.getDrafts);
 router.get('/search', auth, noteController.searchNotes);
 router.get('/:id', auth, noteController.getNoteById);
 router.put('/:id', auth, noteController.updateNote);

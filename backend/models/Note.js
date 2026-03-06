@@ -27,6 +27,10 @@ const noteSchema = new mongoose.Schema({
   deleted: {
     type: Boolean,
     default: false
+  },
+  isDraft: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true

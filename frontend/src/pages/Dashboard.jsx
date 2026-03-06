@@ -10,6 +10,8 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
   const [notes, setNotes] = useState([]);
+  const [drafts, setDrafts] = useState([]);
+  const [showDrafts, setShowDrafts] = useState(false);
   const [folders, setFolders] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,6 +32,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadNotes();
+    loadDrafts();
     loadFolders();
   }, []);
 
@@ -41,6 +44,15 @@ export default function Dashboard() {
       console.error('Failed to load notes:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadDrafts = async () => {
+    try {
+      const data = await noteService.getDrafts();
+      setDrafts(data);
+    } catch (error) {
+      console.error('Failed to load drafts:', error);
     }
   };
 
@@ -189,7 +201,21 @@ export default function Dashboard() {
   };
 
   const handleUpdateNote = (updatedNote) => {
-    setNotes(notes.map(n => n._id === updatedNote._id ? updatedNote : n));
+    if (updatedNote.isDraft) {
+      // Update in drafts
+      setDrafts(drafts.map(n => n._id === updatedNote._id ? updatedNote : n));
+      // Remove from notes if it was there
+      setNotes(notes.filter(n => n._id !== updatedNote._id));
+    } else {
+      // Update in notes
+      setNotes(notes.map(n => n._id === updatedNote._id ? updatedNote : n));
+      // Add to notes if it was a draft
+      if (!notes.find(n => n._id === updatedNote._id)) {
+        setNotes([updatedNote, ...notes]);
+      }
+      // Remove from drafts
+      setDrafts(drafts.filter(n => n._id !== updatedNote._id));
+    }
     setSelectedNote(updatedNote);
   };
 
@@ -289,6 +315,7 @@ export default function Dashboard() {
           setActiveView={(view) => {
             setActiveView(view);
             setSelectedNote(null);
+            setShowDrafts(false); // Reset drafts view when changing views
           }}
           onCreateNote={handleCreateNote}
         />
@@ -329,9 +356,11 @@ export default function Dashboard() {
 
       case 'all-notes':
       case 'shared':
-        const displayNotes = activeView === 'shared' 
-          ? filteredNotes.filter(note => note.collaborators && note.collaborators.length > 0)
-          : filteredNotes;
+        const displayNotes = showDrafts 
+          ? drafts
+          : activeView === 'shared' 
+            ? filteredNotes.filter(note => note.collaborators && note.collaborators.length > 0)
+            : filteredNotes;
 
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
@@ -341,15 +370,33 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                      {activeView === 'all-notes' ? 'My Notes' : 'Shared Notes'}
+                      {showDrafts ? 'Drafts' : activeView === 'all-notes' ? 'My Notes' : 'Shared Notes'}
                     </h1>
                     <p className="text-sm text-gray-500">
-                      {activeView === 'all-notes' 
-                        ? 'Capture ideas, organize them, and share when needed.' 
-                        : 'Notes shared with you by collaborators'}
+                      {showDrafts 
+                        ? 'Notes that are being edited and not yet saved'
+                        : activeView === 'all-notes' 
+                          ? 'Capture ideas, organize them, and share when needed.' 
+                          : 'Notes shared with you by collaborators'}
                     </p>
                   </div>
-                  {activeView === 'shared' && (
+                  <div className="flex items-center gap-2">
+                    {activeView === 'all-notes' && (
+                      <button
+                        onClick={() => setShowDrafts(!showDrafts)}
+                        className={`font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm ${
+                          showDrafts
+                            ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        {showDrafts ? `All Notes (${notes.length})` : `Drafts (${drafts.length})`}
+                      </button>
+                    )}
+                    {activeView === 'shared' && (
                     <button
                       onClick={() => setShowShareNotesModal(true)}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm"
@@ -361,10 +408,12 @@ export default function Dashboard() {
                     </button>
                   )}
                 </div>
+              </div>
 
-                {/* Search and Filters */}
-                <div className="flex items-center gap-3">
-                  <div className="relative flex-1">
+                {/* Search and Filters - Hide when showing drafts */}
+                {!showDrafts && (
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-1">
                     <svg
                       className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                       fill="none"
@@ -425,6 +474,7 @@ export default function Dashboard() {
                     </button>
                   </div>
                 </div>
+                )}
               </div>
 
               {displayNotes.length === 0 && activeView === 'shared' ? (
@@ -835,7 +885,10 @@ export default function Dashboard() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar
         activeView={activeView}
-        setActiveView={setActiveView}
+        setActiveView={(view) => {
+          setActiveView(view);
+          setShowDrafts(false); // Reset drafts view when changing views
+        }}
         onCreateNote={handleCreateNote}
       />
       {renderContent()}
