@@ -387,18 +387,19 @@ export default function Dashboard() {
                     </div>
                     <div className="mb-6">
                       <label className="block text-sm font-semibold text-gray-700 mb-3">Color</label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="flex items-center gap-3">
                         {colorOptions.map((color) => (
                           <button
                             key={color.value}
                             type="button"
                             onClick={() => setNewFolderColor(color.value)}
-                            className={`p-4 rounded-xl bg-gradient-to-br ${color.from} ${color.to} text-white font-semibold transition ${
-                              newFolderColor === color.value ? 'ring-4 ring-offset-2 ring-indigo-500' : 'hover:scale-105'
+                            className={`w-10 h-10 rounded-full bg-gradient-to-br ${color.from} ${color.to} transition-all ${
+                              newFolderColor === color.value 
+                                ? 'ring-4 ring-offset-2 ring-indigo-500 scale-110' 
+                                : 'hover:scale-110'
                             }`}
-                          >
-                            {color.name}
-                          </button>
+                            title={color.name}
+                          />
                         ))}
                       </div>
                     </div>
