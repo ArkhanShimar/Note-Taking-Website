@@ -31,6 +31,7 @@ exports.getNotes = async (req, res) => {
     })
     .populate('owner', 'name email')
     .populate('collaborators', 'name email')
+    .populate('lastEditedBy', 'name email')
     .sort({ updatedAt: -1 });
 
     res.json(notes);
@@ -48,6 +49,7 @@ exports.getDrafts = async (req, res) => {
     })
     .populate('owner', 'name email')
     .populate('collaborators', 'name email')
+    .populate('lastEditedBy', 'name email')
     .sort({ updatedAt: -1 });
 
     res.json(drafts);
@@ -67,7 +69,8 @@ exports.getNoteById = async (req, res) => {
       deleted: false
     })
     .populate('owner', 'name email')
-    .populate('collaborators', 'name email');
+    .populate('collaborators', 'name email')
+    .populate('lastEditedBy', 'name email');
 
     if (!note) {
       return res.status(404).json({ message: 'Note not found' });
@@ -100,10 +103,14 @@ exports.updateNote = async (req, res) => {
     if (content !== undefined) note.content = content;
     if (folder !== undefined) note.folder = folder;
     if (isDraft !== undefined) note.isDraft = isDraft;
+    
+    // Track who made the last edit
+    note.lastEditedBy = req.user.id;
 
     await note.save();
     await note.populate('owner', 'name email');
     await note.populate('collaborators', 'name email');
+    await note.populate('lastEditedBy', 'name email');
 
     res.json(note);
   } catch (error) {
@@ -156,6 +163,7 @@ exports.searchNotes = async (req, res) => {
     })
     .populate('owner', 'name email')
     .populate('collaborators', 'name email')
+    .populate('lastEditedBy', 'name email')
     .sort({ updatedAt: -1 });
 
     res.json(notes);
@@ -197,6 +205,7 @@ exports.addCollaborator = async (req, res) => {
     await note.save();
     await note.populate('owner', 'name email');
     await note.populate('collaborators', 'name email');
+    await note.populate('lastEditedBy', 'name email');
 
     res.json(note);
   } catch (error) {
@@ -225,6 +234,7 @@ exports.removeCollaborator = async (req, res) => {
     await note.save();
     await note.populate('owner', 'name email');
     await note.populate('collaborators', 'name email');
+    await note.populate('lastEditedBy', 'name email');
 
     res.json(note);
   } catch (error) {

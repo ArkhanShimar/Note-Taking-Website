@@ -31,6 +31,11 @@ const noteSchema = new mongoose.Schema({
   isDraft: {
     type: Boolean,
     default: true
+  },
+  lastEditedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   }
 }, {
   timestamps: true

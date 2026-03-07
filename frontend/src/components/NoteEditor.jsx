@@ -199,7 +199,14 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
               ) : note.isDraft ? (
                 <span className="text-amber-600">Draft</span>
               ) : (
-                <span className="hidden sm:inline">Saved</span>
+                <span className="flex flex-col gap-0.5">
+                  <span className="hidden sm:inline">Saved</span>
+                  {note.lastEditedBy && (
+                    <span className="text-xs text-indigo-600">
+                      by {note.lastEditedBy.name}
+                    </span>
+                  )}
+                </span>
               )}
             </span>
           </div>

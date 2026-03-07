@@ -487,7 +487,13 @@ export default function Dashboard() {
         const displayNotes = showDrafts 
           ? drafts
           : activeView === 'shared' 
-            ? filteredNotes.filter(note => note.collaborators && note.collaborators.length > 0)
+            ? filteredNotes.filter(note => {
+                // Show notes where current user is a collaborator (shared WITH them)
+                // OR notes they own that have collaborators (shared BY them)
+                const isCollaborator = note.collaborators && note.collaborators.some(collab => collab._id === user?.id || collab === user?.id);
+                const isOwnerWithCollaborators = note.owner._id === user?.id && note.collaborators && note.collaborators.length > 0;
+                return isCollaborator || isOwnerWithCollaborators;
+              })
             : filteredNotes;
 
         // Paginate display notes
