@@ -316,15 +316,6 @@ notely/
 - **Dark Mode** - Ensuring every component looked good in both light and dark modes required going through each component carefully.
 - **Image Handling in Editor** - Quill's image handling needed custom configuration to work smoothly.
 
-## Things I'd Improve Given More Time
-
-- Add real-time collaboration with WebSockets
-- Implement note versioning/history
-- Add export functionality (PDF, Markdown)
-- Better mobile experience for the editor
-- Add tags/labels for notes
-- Implement note templates
-
 ## Development Notes
 
 This project was built as a learning experience to understand full-stack development with the MERN stack. I used AI assistance (ChatGPT/Claude) during development for debugging, understanding certain concepts, and getting suggestions on best practices. However, all the core logic, architecture decisions, and implementation were done by me. I believe in using modern tools to learn and build better software.
@@ -336,34 +327,6 @@ To test the collaboration features, you'll need to:
 2. Create a note with one account
 3. Share it with the second account's email
 4. Login with the second account to see the shared note
-
-## Deployment Notes
-
-If you want to deploy this:
-- Backend can go on Heroku, Railway, or Render
-- Frontend works great on Vercel or Netlify
-- Don't forget to update the `VITE_API_URL` in frontend .env
-- Make sure to set all environment variables in your hosting platform
-
-## Future Enhancements
-
-Some features I'd like to add in the future:
-- Real-time collaboration with WebSockets (see edits as they happen)
-- Note versioning and history (undo/redo across sessions)
-- Export notes to PDF, Markdown, or plain text
-- Note templates for common use cases
-- Tags and labels for better organization
-- Kanban board view for task management
-- Mobile apps (React Native)
-- Offline support with sync
-
-## Contributing
-
-This is a personal project, but if you find bugs or have suggestions, feel free to open an issue or submit a pull request!
-
-## License
-
-This project is open source and available under the MIT License.
 
 ---
 
