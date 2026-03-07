@@ -6,9 +6,11 @@ import NoteEditor from '../components/NoteEditor';
 import Toast from '../components/Toast';
 import { noteService } from '../services/noteService';
 import { folderService } from '../services/folderService';
+import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [notes, setNotes] = useState([]);
   const [drafts, setDrafts] = useState([]);
   const [showDrafts, setShowDrafts] = useState(false);
@@ -29,12 +31,23 @@ export default function Dashboard() {
   const [selectedNotesForSharing, setSelectedNotesForSharing] = useState([]);
   const [shareEmail, setShareEmail] = useState('');
   const [shareError, setShareError] = useState('');
+  
+  // Profile form states
+  const [profileName, setProfileName] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     loadNotes();
     loadDrafts();
     loadFolders();
-  }, []);
+    if (user?.name) {
+      setProfileName(user.name);
+    }
+  }, [user]);
 
   const loadNotes = async () => {
     try {
@@ -242,6 +255,88 @@ export default function Dashboard() {
 
   const handleBackToView = () => {
     setSelectedNote(null);
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    if (!profileName.trim()) {
+      setToast({ message: 'Please enter your name', type: 'error' });
+      return;
+    }
+
+    setUpdatingProfile(true);
+    try {
+      const response = await authService.updateProfile(profileName);
+      setToast({ message: 'Profile updated successfully!', type: 'success' });
+      // Update user context if needed
+      window.location.reload(); // Reload to update user data
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to update profile. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setToast({ message: 'Please fill in all password fields', type: 'error' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setToast({ message: 'New passwords do not match', type: 'error' });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setToast({ message: 'New password must be at least 6 characters', type: 'error' });
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      await authService.changePassword(currentPassword, newPassword);
+      setToast({ message: 'Password changed successfully!', type: 'success' });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      console.error('Failed to change password:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to change password. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account? This action cannot be undone. All your notes and folders will be permanently deleted.'
+    );
+
+    if (!confirmed) return;
+
+    const doubleConfirm = window.confirm(
+      'This is your last chance. Are you absolutely sure you want to delete your account?'
+    );
+
+    if (!doubleConfirm) return;
+
+    try {
+      await authService.deleteAccount();
+      setToast({ message: 'Account deleted successfully', type: 'success' });
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1500);
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to delete account. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
+    }
   };
 
   const getColorClasses = (color) => {
@@ -945,19 +1040,133 @@ export default function Dashboard() {
       case 'profile':
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
-            <div className="max-w-7xl mx-auto p-8">
-              <div className="mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">Profile Settings</h1>
-                <p className="text-gray-600">Manage your account settings</p>
+            <div className="max-w-4xl mx-auto p-6">
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-1">Profile Settings</h1>
+                <p className="text-sm text-gray-600">Manage your account information and preferences</p>
               </div>
-              <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
+
+              {/* Profile Information */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Profile Information</h2>
+                <form onSubmit={handleUpdateProfile}>
+                  <div className="flex items-start gap-6">
+                    <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-3xl font-bold text-white">
+                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                    <div className="flex-1 space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
+                        <input
+                          type="text"
+                          value={profileName}
+                          onChange={(e) => setProfileName(e.target.value)}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
+                        <input
+                          type="email"
+                          value={user?.email || ''}
+                          disabled
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed text-sm"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                      </div>
+                      <button 
+                        type="submit"
+                        disabled={updatingProfile}
+                        className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition shadow-sm hover:shadow-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {updatingProfile ? 'Updating...' : 'Update Profile'}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              {/* Change Password */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Change Password</h2>
+                <form onSubmit={handleChangePassword}>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Current Password</label>
+                      <input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Enter current password"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">New Password</label>
+                        <input
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Enter new password"
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Confirm Password</label>
+                        <input
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Confirm new password"
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                        />
+                      </div>
+                    </div>
+                    <button 
+                      type="submit"
+                      disabled={changingPassword}
+                      className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition shadow-sm hover:shadow-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {changingPassword ? 'Changing...' : 'Change Password'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Account Statistics */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Account Statistics</h2>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-indigo-50 rounded-xl">
+                    <div className="text-2xl font-bold text-indigo-600">{notes.length}</div>
+                    <div className="text-xs text-gray-600 mt-1">Total Notes</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-xl">
+                    <div className="text-2xl font-bold text-green-600">
+                      {notes.filter(n => n.collaborators && n.collaborators.length > 0).length}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">Shared Notes</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-xl">
+                    <div className="text-2xl font-bold text-purple-600">{folders.length}</div>
+                    <div className="text-xs text-gray-600 mt-1">Folders</div>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Profile settings coming soon</h3>
-                <p className="text-gray-600">This feature is under development</p>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-red-200">
+                <h2 className="text-xl font-bold text-red-600 mb-2">Danger Zone</h2>
+                <p className="text-sm text-gray-600 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
+                <button 
+                  onClick={handleDeleteAccount}
+                  className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition shadow-sm hover:shadow-md text-sm"
+                >
+                  Delete Account
+                </button>
               </div>
             </div>
           </div>

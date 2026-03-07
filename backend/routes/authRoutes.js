@@ -6,5 +6,8 @@ const auth = require('../middleware/auth');
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.get('/me', auth, authController.getMe);
+router.put('/profile', auth, authController.updateProfile);
+router.put('/change-password', auth, authController.changePassword);
+router.delete('/account', auth, authController.deleteAccount);
 
 module.exports = router;

@@ -31,5 +31,24 @@ export const authService = {
 
   getToken() {
     return localStorage.getItem('token');
+  },
+
+  async updateProfile(name) {
+    const response = await api.put('/auth/profile', { name });
+    if (response.data.user) {
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+    return response.data;
+  },
+
+  async changePassword(currentPassword, newPassword) {
+    const response = await api.put('/auth/change-password', { currentPassword, newPassword });
+    return response.data;
+  },
+
+  async deleteAccount() {
+    const response = await api.delete('/auth/account');
+    this.logout();
+    return response.data;
   }
 };
