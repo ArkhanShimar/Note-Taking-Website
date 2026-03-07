@@ -16,3 +16,76 @@
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
 }
+
+/* React Quill Custom Styles */
+.ql-toolbar {
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+  border-color: #e2e8f0 !important;
+  background-color: #f8fafc;
+}
+
+.ql-container {
+  border-bottom-left-radius: 0.75rem;
+  border-bottom-right-radius: 0.75rem;
+  border-color: #e2e8f0 !important;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.ql-editor {
+  min-height: 300px;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.ql-editor.ql-blank::before {
+  color: #94a3b8;
+  font-style: normal;
+}
+
+/* Highlight colors */
+.ql-snow .ql-picker.ql-background .ql-picker-label,
+.ql-snow .ql-picker.ql-color .ql-picker-label {
+  padding: 2px 4px;
+}
+
+/* Link styling */
+.ql-editor a {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+.ql-editor a:hover {
+  color: #4338ca;
+}
+
+/* Image styling */
+.ql-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Custom highlight colors in editor */
+.ql-editor .ql-bg-yellow {
+  background-color: #fef08a;
+}
+
+.ql-editor .ql-bg-green {
+  background-color: #bbf7d0;
+}
+
+.ql-editor .ql-bg-blue {
+  background-color: #bfdbfe;
+}
+
+.ql-editor .ql-bg-pink {
+  background-color: #fbcfe8;
+}
+
+.ql-editor .ql-bg-purple {
+  background-color: #e9d5ff;
+}

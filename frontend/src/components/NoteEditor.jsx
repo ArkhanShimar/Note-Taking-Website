@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { noteService } from '../services/noteService';
 import { useAuth } from '../context/AuthContext';
 import Toast from './Toast';
 
-export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
+export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackToNotes }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
@@ -13,22 +13,76 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showFolderMenu, setShowFolderMenu] = useState(false);
   const [collaboratorEmail, setCollaboratorEmail] = useState('');
+  const [collaboratorEmails, setCollaboratorEmails] = useState([]);
+  const [shareError, setShareError] = useState('');
   const [toast, setToast] = useState(null);
+  const [isSaved, setIsSaved] = useState(false); // Track if note was manually saved
   const { user } = useAuth();
   const quillRef = useRef(null);
   const autoSaveTimerRef = useRef(null);
+
+  // Image handler for React Quill
+  const imageHandler = useCallback(() => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files[0];
+      
+      // Check file size (limit to 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setToast({ message: 'Image size should be less than 2MB', type: 'error' });
+        return;
+      }
+
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const quill = quillRef.current.getEditor();
+        const range = quill.getSelection(true);
+        quill.insertEmbed(range.index, 'image', e.target.result);
+        quill.setSelection(range.index + 1);
+      };
+      reader.readAsDataURL(file);
+    };
+  }, []);
+
+  const modules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ header: [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ color: [] }, { background: [] }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        [{ indent: '-1' }, { indent: '+1' }],
+        ['blockquote', 'code-block'],
+        ['link', 'image'],
+        ['clean']
+      ],
+      handlers: {
+        image: imageHandler
+      }
+    },
+    clipboard: {
+      matchVisual: false
+    }
+  }), [imageHandler]);
 
   useEffect(() => {
     if (note) {
       setTitle(note.title || '');
       setContent(note.content || '');
+      setIsSaved(false); // Reset saved state when switching notes
     }
-  }, [note?._id, note?.title, note?.content, note?.isDraft]);
+  }, [note?._id]); // Only reset when note ID changes, not when isDraft changes
 
   // Auto-save as draft when content changes
   useEffect(() => {
     if (!note) return;
     if (saving) return; // Don't auto-save while manually saving
+    if (isSaved) return; // Don't auto-save after manual save
 
     // Clear existing timer
     if (autoSaveTimerRef.current) {
@@ -37,9 +91,16 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
 
     // Set new timer for auto-save (2 seconds after user stops typing)
     autoSaveTimerRef.current = setTimeout(async () => {
+      // Double-check saving state before auto-saving
+      if (saving || isSaved) {
+        console.log('Auto-save cancelled: manual save completed or in progress');
+        return;
+      }
+      
       if ((title || content) && !saving) {
         setAutoSaving(true);
         try {
+          console.log('Auto-saving as draft');
           const updated = await noteService.updateNote(note._id, title, content, note.folder, true); // Save as draft
           onUpdate(updated);
         } catch (error) {
@@ -56,7 +117,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
         clearTimeout(autoSaveTimerRef.current);
       }
     };
-  }, [title, content, note, saving]);
+  }, [title, content, note?._id, saving, isSaved, onUpdate]); // Only trigger on title/content changes, not note object changes
 
   const handleSave = async () => {
     if (!note) return;
@@ -68,9 +129,19 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
 
     setSaving(true);
     try {
+      console.log('Saving note with isDraft=false');
       const updated = await noteService.updateNote(note._id, title, content, note.folder, false); // Save as published
+      console.log('Note saved, isDraft:', updated.isDraft);
       onUpdate(updated);
+      setIsSaved(true); // Mark as saved to prevent auto-save
       setToast({ message: 'Note saved successfully!', type: 'success' });
+      
+      // Navigate back to My Notes after a short delay
+      setTimeout(() => {
+        if (onBackToNotes) {
+          onBackToNotes();
+        }
+      }, 1000);
     } catch (error) {
       console.error('Failed to save note:', error);
       const errorMessage = error.response?.data?.message || 'Failed to save note. Please try again.';
@@ -111,16 +182,91 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
 
   const handleAddCollaborator = async (e) => {
     e.preventDefault();
-    if (!collaboratorEmail.trim()) return;
+    const email = collaboratorEmail.trim();
+    if (!email) return;
 
-    try {
-      const updated = await noteService.addCollaborator(note._id, collaboratorEmail);
-      onUpdate(updated);
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setShareError('Please enter a valid email address');
+      return;
+    }
+
+    // Check if user is trying to share with themselves
+    if (email.toLowerCase() === user?.email?.toLowerCase()) {
+      setShareError('You cannot share notes with yourself');
+      return;
+    }
+
+    // Check for duplicates
+    if (collaboratorEmails.includes(email)) {
+      setShareError('This email has already been added');
+      return;
+    }
+
+    // Check if already a collaborator
+    if (note.collaborators && note.collaborators.some(c => c.email.toLowerCase() === email.toLowerCase())) {
+      setShareError('This user is already a collaborator');
+      return;
+    }
+
+    setCollaboratorEmails([...collaboratorEmails, email]);
+    setCollaboratorEmail('');
+    setShareError('');
+  };
+
+  const handleRemoveCollaboratorEmail = (emailToRemove) => {
+    setCollaboratorEmails(collaboratorEmails.filter(email => email !== emailToRemove));
+  };
+
+  const handleShareWithAll = async () => {
+    if (collaboratorEmails.length === 0) {
+      setShareError('Please add at least one email address');
+      return;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+    let userNotFoundEmails = [];
+    let lastError = '';
+
+    for (const email of collaboratorEmails) {
+      try {
+        const updated = await noteService.addCollaborator(note._id, email);
+        onUpdate(updated);
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to share with ${email}:`, error);
+        failCount++;
+        lastError = error.response?.data?.message || 'Failed to share note';
+        
+        if (lastError.toLowerCase().includes('user not found') || 
+            lastError.toLowerCase().includes('not found') ||
+            lastError.toLowerCase().includes('does not exist')) {
+          userNotFoundEmails.push(email);
+        }
+      }
+    }
+
+    // Handle errors
+    if (userNotFoundEmails.length === collaboratorEmails.length && successCount === 0) {
+      setShareError(`User(s) not found: ${userNotFoundEmails.join(', ')}`);
+      return;
+    }
+
+    if (userNotFoundEmails.length > 0) {
+      setShareError(`Some users not found: ${userNotFoundEmails.join(', ')}. Others added successfully.`);
+    }
+
+    // Success
+    if (successCount > 0) {
+      setCollaboratorEmails([]);
       setCollaboratorEmail('');
-      setToast({ message: 'Collaborator added successfully!', type: 'success' });
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to add collaborator. Please try again.';
-      setToast({ message: errorMessage, type: 'error' });
+      setShareError('');
+      setToast({ 
+        message: `Successfully shared with ${successCount} ${successCount === 1 ? 'person' : 'people'}!`, 
+        type: 'success' 
+      });
     }
   };
 
@@ -137,17 +283,6 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
   };
 
   const isOwner = note && user && note.owner._id === user.id;
-
-  const modules = {
-    toolbar: [
-      [{ header: [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ list: 'ordered' }, { list: 'bullet' }],
-      ['blockquote', 'code-block'],
-      ['link'],
-      ['clean']
-    ]
-  };
 
   if (!note) {
     return (
@@ -321,26 +456,80 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
             </div>
 
             {isOwner && (
-              <form onSubmit={handleAddCollaborator} className="mb-6 sm:mb-8">
-                <label className="block text-sm font-semibold text-slate-700 mb-2 sm:mb-3">
-                  Add collaborator by email
-                </label>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <input
-                    type="email"
-                    value={collaboratorEmail}
-                    onChange={(e) => setCollaboratorEmail(e.target.value)}
-                    placeholder="colleague@example.com"
-                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
-                  />
+              <>
+                {shareError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2">
+                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p>{shareError}</p>
+                  </div>
+                )}
+                
+                <form onSubmit={handleAddCollaborator} className="mb-6 sm:mb-8">
+                  <label className="block text-sm font-semibold text-slate-700 mb-2 sm:mb-3">
+                    Add collaborators by email
+                  </label>
+                  
+                  {/* Email Tags Display */}
+                  {collaboratorEmails.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      {collaboratorEmails.map((email, index) => (
+                        <div
+                          key={index}
+                          className="inline-flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-medium"
+                        >
+                          <span>{email}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCollaboratorEmail(email)}
+                            className="hover:bg-indigo-200 rounded-full p-0.5 transition"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <input
+                      type="email"
+                      value={collaboratorEmail}
+                      onChange={(e) => {
+                        setCollaboratorEmail(e.target.value);
+                        setShareError('');
+                      }}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddCollaborator(e);
+                        }
+                      }}
+                      placeholder="colleague@example.com"
+                      className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
+                    />
+                    <button
+                      type="submit"
+                      className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition shadow-sm hover:shadow-md text-sm whitespace-nowrap"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2">Press Enter or click Add to add multiple email addresses</p>
+                </form>
+                
+                {collaboratorEmails.length > 0 && (
                   <button
-                    type="submit"
-                    className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition shadow-sm hover:shadow-md text-sm whitespace-nowrap"
+                    onClick={handleShareWithAll}
+                    className="w-full mb-6 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition shadow-sm hover:shadow-md text-sm"
                   >
-                    Add
+                    Share with {collaboratorEmails.length} {collaboratorEmails.length === 1 ? 'person' : 'people'}
                   </button>
-                </div>
-              </form>
+                )}
+              </>
             )}
 
             <div>
