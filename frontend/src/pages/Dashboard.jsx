@@ -694,10 +694,16 @@ export default function Dashboard() {
   const renderContent = () => {
     switch (activeView) {
       case 'dashboard':
+        // Find the Private folder and exclude its notes from dashboard
+        const privateFolderForDashboard = folders.find(f => f.isPrivate);
+        const privateFolderIdForDashboard = privateFolderForDashboard?._id;
+        const notesForDashboard = filteredNotes.filter(note => note.folder !== privateFolderIdForDashboard);
+        const draftsForDashboard = drafts.filter(note => note.folder !== privateFolderIdForDashboard);
+        
         return (
           <DashboardHome
-            notes={filteredNotes}
-            drafts={drafts}
+            notes={notesForDashboard}
+            drafts={draftsForDashboard}
             onSelectNote={setSelectedNote}
             onCreateNote={handleCreateNote}
             onNavigate={setActiveView}
@@ -710,10 +716,17 @@ export default function Dashboard() {
 
       case 'all-notes':
       case 'shared':
+        // Find the Private folder
+        const privateFolder = folders.find(f => f.isPrivate);
+        const privateFolderId = privateFolder?._id;
+
         const displayNotes = showDrafts 
-          ? drafts
+          ? drafts.filter(note => note.folder !== privateFolderId)
           : activeView === 'shared' 
             ? filteredNotes.filter(note => {
+                // Exclude notes in Private folder
+                if (note.folder === privateFolderId) return false;
+                
                 // Show notes where current user is a collaborator (shared WITH them)
                 // OR notes they own that have collaborators (shared BY them)
                 const isCollaborator = note.collaborators && note.collaborators.some(collab => collab._id === user?.id || collab === user?.id);
@@ -730,18 +743,12 @@ export default function Dashboard() {
                 }
               })
             : filteredNotes.filter(note => {
-                // In "My Notes", only show notes owned by the user that are NOT shared
+                // Exclude notes in Private folder
+                if (note.folder === privateFolderId) return false;
+                
+                // In "My Notes", show all notes owned by the user (including shared ones)
                 const isOwned = note.owner._id === user?.id;
-                const hasNoCollaborators = !note.collaborators || note.collaborators.length === 0;
-                console.log('Filtering note:', { 
-                  id: note._id, 
-                  title: note.title,
-                  isOwned, 
-                  collaborators: note.collaborators,
-                  hasNoCollaborators,
-                  willShow: isOwned && hasNoCollaborators
-                });
-                return isOwned && hasNoCollaborators;
+                return isOwned;
               });
 
         // Paginate display notes
@@ -1063,44 +1070,91 @@ export default function Dashboard() {
                 })}
               </div>
 
-              {folders.length > 0 && (
-                <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">All Notes</h2>
-                  <div className="space-y-3">
-                    {notes.slice(0, 10).map((note) => {
+              {folders.length > 0 && notes.length > 0 && (() => {
+                // Filter out notes in Private folder
+                const privateFolderForRecent = folders.find(f => f.isPrivate);
+                const privateFolderIdForRecent = privateFolderForRecent?._id;
+                const recentNotesFiltered = notes.filter(note => note.folder !== privateFolderIdForRecent).slice(0, 8);
+                
+                return recentNotesFiltered.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900">Recent Notes</h2>
+                        <p className="text-sm text-gray-600">Quick access to your latest notes</p>
+                      </div>
+                      <button
+                        onClick={() => setActiveView('all-notes')}
+                        className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center gap-1 transition"
+                      >
+                        View all
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {recentNotesFiltered.map((note) => {
                       const noteFolder = folders.find(f => f._id === note.folder);
                       return (
                         <div
                           key={note._id}
                           onClick={() => setSelectedNote(note)}
-                          className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl cursor-pointer transition"
+                          className="group bg-white rounded-xl border-2 border-gray-200 hover:border-indigo-400 p-4 cursor-pointer transition-all hover:shadow-lg"
                         >
-                          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 truncate">{note.title || 'Untitled'}</p>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                              {noteFolder && (
-                                <span className="flex items-center gap-1">
-                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                                  </svg>
-                                  {noteFolder.name}
-                                </span>
-                              )}
-                              <span>•</span>
-                              <span>{new Date(note.updatedAt).toLocaleDateString()}</span>
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
                             </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-gray-900 truncate text-sm group-hover:text-indigo-600 transition">
+                                {note.title || 'Untitled'}
+                              </h3>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {new Date(note.updatedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {noteFolder && (
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <div className={`w-6 h-6 bg-gradient-to-br ${getColorClasses(noteFolder.color)} rounded-md flex items-center justify-center`}>
+                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                </svg>
+                              </div>
+                              <span className="text-xs font-medium text-gray-700 truncate">{noteFolder.name}</span>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            {note.collaborators && note.collaborators.length > 0 && (
+                              <span className="flex items-center gap-1 bg-purple-50 text-purple-600 px-2 py-1 rounded-md">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                Shared
+                              </span>
+                            )}
+                            {note.isDraft && (
+                              <span className="flex items-center gap-1 bg-orange-50 text-orange-600 px-2 py-1 rounded-md">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Draft
+                              </span>
+                            )}
                           </div>
                         </div>
                       );
                     })}
                   </div>
                 </div>
-              )}
+                );
+              })()}
             </div>
 
             {showCreateFolderModal && (
@@ -2177,15 +2231,22 @@ export default function Dashboard() {
                     onClick={() => handleAddNoteToFolder(noteToAddToFolder._id, folder._id)}
                     className={`w-full flex items-center gap-3 p-3 border-2 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition ${
                       noteToAddToFolder.folder === folder._id ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200'
-                    }`}
+                    } ${folder.isPrivate ? 'bg-pink-50 border-pink-200 hover:border-pink-400 hover:bg-pink-100' : ''}`}
                   >
                     <div className={`w-10 h-10 bg-gradient-to-br ${getColorClasses(folder.color)} rounded-lg flex items-center justify-center flex-shrink-0`}>
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        {folder.isPrivate ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        )}
                       </svg>
                     </div>
                     <div className="flex-1 text-left min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm truncate">{folder.name}</p>
+                      <p className="font-semibold text-gray-900 text-sm truncate">
+                        {folder.name}
+                        {folder.isPrivate && <span className="ml-1 text-xs text-pink-600">(Hidden from other views)</span>}
+                      </p>
                       <p className="text-xs text-gray-500">{notes.filter(n => n.folder === folder._id).length} notes</p>
                     </div>
                     <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
