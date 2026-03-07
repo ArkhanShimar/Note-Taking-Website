@@ -70,7 +70,7 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
           <div
             key={note._id}
             onClick={() => setPreviewNote(note)}
-            className="group bg-white rounded-3xl border border-gray-200 p-5 cursor-pointer transition-all hover:shadow-xl hover:shadow-indigo-100 hover:border-indigo-300 hover:-translate-y-1 relative"
+            className="group bg-white rounded-3xl border-2 border-gray-200 p-5 cursor-pointer transition-all hover:shadow-2xl hover:shadow-indigo-100 hover:border-indigo-300 hover:-translate-y-1 relative"
           >
             
             <div>

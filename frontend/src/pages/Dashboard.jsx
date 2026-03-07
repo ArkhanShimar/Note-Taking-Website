@@ -39,6 +39,10 @@ export default function Dashboard() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const notesPerPage = 12;
 
   useEffect(() => {
     loadNotes();
@@ -390,6 +394,17 @@ export default function Dashboard() {
 
   const filteredNotes = filterNotesByDate(sortedNotes);
 
+  // Pagination logic
+  const indexOfLastNote = currentPage * notesPerPage;
+  const indexOfFirstNote = indexOfLastNote - notesPerPage;
+  const currentNotes = filteredNotes.slice(indexOfFirstNote, indexOfLastNote);
+  const totalPages = Math.ceil(filteredNotes.length / notesPerPage);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dateFilter, searchQuery, showDrafts, activeView]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
@@ -457,17 +472,24 @@ export default function Dashboard() {
             ? filteredNotes.filter(note => note.collaborators && note.collaborators.length > 0)
             : filteredNotes;
 
+        // Paginate display notes
+        const paginatedDisplayNotes = displayNotes.slice(
+          (currentPage - 1) * notesPerPage,
+          currentPage * notesPerPage
+        );
+        const displayTotalPages = Math.ceil(displayNotes.length / notesPerPage);
+
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
             <div className="max-w-7xl mx-auto p-6">
               {/* Header Section */}
-              <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
+              <div className="bg-gradient-to-r from-white via-indigo-50/30 to-purple-50/30 rounded-2xl p-6 mb-6 shadow-md border-2 border-indigo-100">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
                       {showDrafts ? 'Drafts' : activeView === 'all-notes' ? 'My Notes' : 'Shared Notes'}
                     </h1>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-600">
                       {showDrafts 
                         ? 'Notes that are being edited and not yet saved'
                         : activeView === 'all-notes' 
@@ -479,10 +501,10 @@ export default function Dashboard() {
                     {activeView === 'all-notes' && (
                       <button
                         onClick={() => setShowDrafts(!showDrafts)}
-                        className={`font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm ${
+                        className={`font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm shadow-sm ${
                           showDrafts
-                            ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-purple-200'
+                            : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
                         }`}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -592,10 +614,70 @@ export default function Dashboard() {
                   </button>
                 </div>
               ) : (
-                <NotesGrid
-                  notes={displayNotes}
-                  onSelectNote={setSelectedNote}
-                />
+                <>
+                  <NotesGrid
+                    notes={paginatedDisplayNotes}
+                    onSelectNote={setSelectedNote}
+                  />
+                  
+                  {/* Pagination */}
+                  {displayTotalPages > 1 && (
+                    <div className="mt-6 flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+                      <div className="text-sm text-gray-600">
+                        Showing {((currentPage - 1) * notesPerPage) + 1} to {Math.min(currentPage * notesPerPage, displayNotes.length)} of {displayNotes.length} notes
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                        >
+                          Previous
+                        </button>
+                        
+                        <div className="flex items-center gap-1">
+                          {[...Array(displayTotalPages)].map((_, index) => {
+                            const pageNumber = index + 1;
+                            // Show first page, last page, current page, and pages around current
+                            if (
+                              pageNumber === 1 ||
+                              pageNumber === displayTotalPages ||
+                              (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                            ) {
+                              return (
+                                <button
+                                  key={pageNumber}
+                                  onClick={() => setCurrentPage(pageNumber)}
+                                  className={`w-10 h-10 rounded-lg text-sm font-medium transition ${
+                                    currentPage === pageNumber
+                                      ? 'bg-indigo-600 text-white'
+                                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                  }`}
+                                >
+                                  {pageNumber}
+                                </button>
+                              );
+                            } else if (
+                              pageNumber === currentPage - 2 ||
+                              pageNumber === currentPage + 2
+                            ) {
+                              return <span key={pageNumber} className="text-gray-400">...</span>;
+                            }
+                            return null;
+                          })}
+                        </div>
+                        
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, displayTotalPages))}
+                          disabled={currentPage === displayTotalPages}
+                          className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
