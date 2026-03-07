@@ -27,6 +27,10 @@ export default function Dashboard() {
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [showAddToFolderModal, setShowAddToFolderModal] = useState(false);
   const [noteToAddToFolder, setNoteToAddToFolder] = useState(null);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [pendingFolder, setPendingFolder] = useState(null);
   const [toast, setToast] = useState(null);
   const [showShareNotesModal, setShowShareNotesModal] = useState(false);
   const [showSingleNoteShareModal, setShowSingleNoteShareModal] = useState(false);
@@ -123,6 +127,47 @@ export default function Dashboard() {
       console.error('Failed to delete folder:', error);
       const errorMessage = error.response?.data?.message || 'Failed to delete folder. Please try again.';
       setToast({ message: errorMessage, type: 'error' });
+    }
+  };
+
+  const handleFolderClick = async (folder) => {
+    // Check if it's a private folder
+    if (folder.isPrivate) {
+      setPendingFolder(folder);
+      setShowPinModal(true);
+      setPinInput('');
+      setPinError('');
+    } else {
+      setSelectedFolder(folder);
+      setActiveView('folder-view');
+    }
+  };
+
+  const handlePinSubmit = async (e) => {
+    e.preventDefault();
+    if (!pinInput || pinInput.length !== 4) {
+      setPinError('PIN must be 4 digits');
+      return;
+    }
+
+    try {
+      const result = await folderService.verifyPin(pendingFolder._id, pinInput);
+      if (result.success) {
+        setShowPinModal(false);
+        setPinInput('');
+        setPinError('');
+        setSelectedFolder(pendingFolder);
+        setActiveView('folder-view');
+        setPendingFolder(null);
+        
+        if (result.isNewPin) {
+          setToast({ message: 'PIN set successfully for Private folder!', type: 'success' });
+        }
+      }
+    } catch (error) {
+      console.error('PIN verification failed:', error);
+      const errorMessage = error.response?.data?.message || 'Incorrect PIN';
+      setPinError(errorMessage);
     }
   };
 
@@ -990,23 +1035,22 @@ export default function Dashboard() {
                   return (
                     <div
                       key={folder._id}
-                      onClick={() => {
-                        setSelectedFolder(folder);
-                        setActiveView('folder-view');
-                      }}
+                      onClick={() => handleFolderClick(folder)}
                       className={`bg-gradient-to-br ${getColorClasses(folder.color)} rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg flex flex-col items-center justify-center text-center group relative`}
                     >
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteFolder(folder._id);
-                        }}
-                        className="absolute top-2 right-2 w-5 h-5 bg-white/20 hover:bg-white/30 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                      >
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+                      {!folder.isPrivate && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteFolder(folder._id);
+                          }}
+                          className="absolute top-2 right-2 w-5 h-5 bg-white/20 hover:bg-white/30 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                        >
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
                       <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-2">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -1185,21 +1229,23 @@ export default function Dashboard() {
                       </svg>
                       Add Note
                     </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm(`Delete "${selectedFolder.name}" folder? Notes inside will not be deleted.`)) {
-                          handleDeleteFolder(selectedFolder._id);
-                          setSelectedFolder(null);
-                          setActiveView('folders');
-                        }
-                      }}
-                      className="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Delete Folder
-                    </button>
+                    {!selectedFolder.isPrivate && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Delete "${selectedFolder.name}" folder? Notes inside will not be deleted.`)) {
+                            handleDeleteFolder(selectedFolder._id);
+                            setSelectedFolder(null);
+                            setActiveView('folders');
+                          }
+                        }}
+                        className="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete Folder
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2149,6 +2195,95 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* PIN Modal for Private Folder */}
+      {showPinModal && pendingFolder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Private Folder</h3>
+                  <p className="text-sm text-gray-600">Enter 4-digit PIN</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowPinModal(false);
+                  setPinInput('');
+                  setPinError('');
+                  setPendingFolder(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handlePinSubmit}>
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  {pendingFolder.pin ? 'Enter your PIN to access' : 'Set a new PIN for this folder'}
+                </label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={pinInput}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    setPinInput(value);
+                    setPinError('');
+                  }}
+                  placeholder="••••"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none text-center text-2xl font-bold tracking-widest"
+                  autoFocus
+                />
+                {pinError && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-start gap-2">
+                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p>{pinError}</p>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  {pendingFolder.pin ? 'Enter the 4-digit PIN you set previously' : 'This PIN will be required to access this folder'}
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPinModal(false);
+                    setPinInput('');
+                    setPinError('');
+                    setPendingFolder(null);
+                  }}
+                  className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={pinInput.length !== 4}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  {pendingFolder.pin ? 'Unlock' : 'Set PIN'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

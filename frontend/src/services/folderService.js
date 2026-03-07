@@ -24,5 +24,15 @@ export const folderService = {
   async deleteFolder(id) {
     const response = await api.delete(`/folders/${id}`);
     return response.data;
+  },
+
+  async verifyPin(id, pin) {
+    const response = await api.post(`/folders/${id}/verify-pin`, { pin });
+    return response.data;
+  },
+
+  async updatePin(id, oldPin, newPin) {
+    const response = await api.put(`/folders/${id}/update-pin`, { oldPin, newPin });
+    return response.data;
   }
 };

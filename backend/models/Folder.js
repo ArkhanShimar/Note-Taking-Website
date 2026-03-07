@@ -15,6 +15,14 @@ const folderSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  isPrivate: {
+    type: Boolean,
+    default: false
+  },
+  pin: {
+    type: String,
+    default: null
+  },
   deleted: {
     type: Boolean,
     default: false

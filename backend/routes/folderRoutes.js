@@ -8,5 +8,7 @@ router.get('/', auth, folderController.getFolders);
 router.get('/:id', auth, folderController.getFolderById);
 router.put('/:id', auth, folderController.updateFolder);
 router.delete('/:id', auth, folderController.deleteFolder);
+router.post('/:id/verify-pin', auth, folderController.verifyPin);
+router.put('/:id/update-pin', auth, folderController.updatePin);
 
 module.exports = router;
