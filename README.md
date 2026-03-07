@@ -2,6 +2,10 @@
 
 A full-stack note-taking application built with the MERN stack. Users can create notes, organize them in folders, search through content, and share notes with collaborators.
 
+## Demo Video
+
+[Watch Demo](https://drive.google.com/file/d/11EcHYbdbXhwrvVdeVqCpsEPgQLGD32qa/view?usp=drive_link)
+
 ## Tech Stack
 
 **Frontend**
