@@ -191,6 +191,16 @@
 .editor-custom .ql-editor img.selected {
   outline: 3px solid #6366f1;
   outline-offset: 2px;
+  cursor: nwse-resize;
+}
+
+/* Preserve image width attribute */
+.editor-custom .ql-editor img[width] {
+  width: attr(width px);
+}
+
+.editor-custom .ql-editor img[style*="width"] {
+  max-width: 100%;
 }
 
 /* Headings */

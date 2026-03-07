@@ -84,7 +84,7 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
                       </svg>
                     </div>
                   )}
-                  <h3 className="font-bold text-gray-900 dark:text-white text-lg truncate flex-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
+                  <h3 className="font-bold text-gray-900 dark:text-white text-lg flex-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition break-words line-clamp-2">
                     {note.title || 'Untitled'}
                   </h3>
                 </div>
@@ -226,14 +226,14 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
 
       {/* Preview Modal */}
       {previewNote && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center p-4 z-50 transition-colors" onClick={() => setPreviewNote(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden transition-colors" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-80 flex items-center justify-center p-4 z-50 transition-colors" onClick={() => setPreviewNote(null)}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden transition-colors" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-800 dark:to-purple-900 px-8 py-6 flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <h2 className="text-3xl font-bold text-white mb-2 truncate">{previewNote.title || 'Untitled'}</h2>
+                <h2 className="text-3xl font-bold text-white mb-2 break-words">{previewNote.title || 'Untitled'}</h2>
                 <div className="flex flex-col gap-1 text-white/90 text-sm">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 flex-wrap">
                     <span className="flex items-center gap-1.5">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -250,7 +250,7 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
                     )}
                   </div>
                   {!previewNote.isDraft && (
-                    <div className="flex items-center gap-3 text-white/80 text-xs">
+                    <div className="flex items-center gap-3 text-white/80 text-xs flex-wrap">
                       {previewNote.owner && (
                         <span>Created by {previewNote.owner.name}</span>
                       )}
@@ -275,16 +275,16 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
             </div>
 
             {/* Content */}
-            <div className="p-8 overflow-y-auto max-h-[calc(90vh-200px)]">
+            <div className="p-4 sm:p-8 overflow-y-auto max-h-[calc(90vh-200px)] bg-white dark:bg-gray-800 transition-colors">
               <div 
-                className="prose prose-lg max-w-none prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-strong:text-gray-900 dark:prose-strong:text-white"
+                className="prose prose-sm sm:prose-lg max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-200 prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-strong:text-gray-900 dark:prose-strong:text-gray-100 prose-code:text-gray-800 dark:prose-code:text-gray-200 prose-pre:bg-gray-100 dark:prose-pre:bg-gray-700 prose-blockquote:border-indigo-500 dark:prose-blockquote:border-indigo-400 prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-200 prose-li:text-gray-700 dark:prose-li:text-gray-200 prose-ol:list-decimal prose-ul:list-disc prose-ol:pl-6 prose-ul:pl-6 [&_*]:text-gray-700 dark:[&_*]:text-gray-200 [&_ol]:!list-decimal [&_ul]:!list-disc"
                 dangerouslySetInnerHTML={{ __html: previewNote.content || '<p class="text-gray-400 dark:text-gray-500 italic">No content</p>' }}
               />
             </div>
 
             {/* Footer */}
-            <div className="bg-gray-50 dark:bg-gray-700 px-8 py-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-600 transition-colors">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="bg-gray-50 dark:bg-gray-900 px-4 sm:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-gray-200 dark:border-gray-700 transition-colors">
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 Created {new Date(previewNote.createdAt).toLocaleDateString('en-US', { 
                   month: 'short', 
                   day: 'numeric', 
@@ -295,10 +295,10 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
                   hour12: true 
                 })}
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
                 <button
                   onClick={() => setPreviewNote(null)}
-                  className="px-5 py-2.5 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-medium rounded-lg transition"
+                  className="flex-1 sm:flex-none px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-lg transition text-sm"
                 >
                   Close
                 </button>
@@ -307,12 +307,13 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
                     setPreviewNote(null);
                     onSelectNote(previewNote);
                   }}
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition flex items-center gap-2"
+                  className="flex-1 sm:flex-none px-4 sm:px-5 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition flex items-center justify-center gap-2 text-sm"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                  Edit Note
+                  <span className="hidden sm:inline">Edit Note</span>
+                  <span className="sm:hidden">Edit</span>
                 </button>
               </div>
             </div>

@@ -105,14 +105,19 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
         
         // Remove previous selection
         const allImages = editor.root.querySelectorAll('img');
-        allImages.forEach(i => i.classList.remove('selected'));
+        allImages.forEach(i => {
+          i.classList.remove('selected');
+          i.style.cursor = 'pointer';
+        });
         
         // Add selection to clicked image
         img.classList.add('selected');
         
-        // Make image resizable
-        if (!img.style.width) {
-          img.style.width = img.naturalWidth + 'px';
+        // Set initial width if not set
+        if (!img.style.width && !img.getAttribute('width')) {
+          const currentWidth = img.offsetWidth || img.naturalWidth;
+          img.style.width = currentWidth + 'px';
+          img.setAttribute('width', currentWidth);
         }
         img.style.maxWidth = '100%';
         img.style.height = 'auto';
@@ -128,6 +133,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
             startX = e.clientX;
             startWidth = parseInt(window.getComputedStyle(img).width, 10);
             e.preventDefault();
+            e.stopPropagation();
           }
         };
         
@@ -136,12 +142,18 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
             const width = startWidth + (e.clientX - startX);
             if (width > 100 && width <= editor.root.offsetWidth) {
               img.style.width = width + 'px';
+              img.setAttribute('width', width); // Save as attribute too
             }
           }
         };
         
         const stopResize = () => {
-          isResizing = false;
+          if (isResizing) {
+            isResizing = false;
+            // Trigger content change to save the new size
+            const delta = editor.getContents();
+            editor.setContents(delta);
+          }
         };
         
         img.addEventListener('mousedown', startResize);
@@ -157,10 +169,23 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
       }
     };
 
+    // Click outside to deselect
+    const handleClickOutside = (e) => {
+      if (e.target.tagName !== 'IMG') {
+        const allImages = editor.root.querySelectorAll('img');
+        allImages.forEach(i => {
+          i.classList.remove('selected');
+          i.style.cursor = 'pointer';
+        });
+      }
+    };
+
     editor.root.addEventListener('click', handleImageClick);
+    document.addEventListener('click', handleClickOutside);
     
     return () => {
       editor.root.removeEventListener('click', handleImageClick);
+      document.removeEventListener('click', handleClickOutside);
     };
   }, [content]);
 
