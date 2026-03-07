@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, showRemoveButton, onDeleteNote, onShareNote, onAddToFolder }) {
   const [previewNote, setPreviewNote] = useState(null);
+  const [deleteConfirmNote, setDeleteConfirmNote] = useState(null);
 
   const formatDate = (date) => {
     const d = new Date(date);
@@ -137,9 +138,7 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (window.confirm('Are you sure you want to delete this note?')) {
-                        onDeleteNote(note._id);
-                      }
+                      setDeleteConfirmNote(note);
                     }}
                     className="w-7 h-7 bg-red-50 hover:bg-red-200 hover:scale-110 text-red-600 rounded-lg flex items-center justify-center transition-all"
                     title="Delete note"
@@ -289,6 +288,50 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
                   Edit Note
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmNote && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Note</h3>
+                <p className="text-gray-600 text-sm mb-1">
+                  Are you sure you want to delete this note?
+                </p>
+                <p className="text-gray-900 font-medium text-sm">
+                  "{deleteConfirmNote.title || 'Untitled'}"
+                </p>
+                <p className="text-red-600 text-xs mt-2">
+                  This action cannot be undone.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmNote(null)}
+                className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  onDeleteNote(deleteConfirmNote._id);
+                  setDeleteConfirmNote(null);
+                }}
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

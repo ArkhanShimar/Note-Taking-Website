@@ -1039,25 +1039,56 @@ export default function Dashboard() {
 
                 {folders.map((folder) => {
                   const folderNotes = notes.filter(n => n.folder === folder._id);
+                  
+                  // Special styling for Private folder
+                  if (folder.isPrivate) {
+                    return (
+                      <div
+                        key={folder._id}
+                        onClick={() => handleFolderClick(folder)}
+                        className="col-span-2 bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 rounded-xl p-5 cursor-pointer transition-all hover:shadow-xl border-2 border-blue-400/30 group relative"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition">
+                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
+                          <div className="flex-1 text-left">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-sm font-bold text-white">{folder.name}</p>
+                              <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-md text-xs text-white font-medium">
+                                PIN Protected
+                              </span>
+                            </div>
+                            <p className="text-xs text-blue-100 mb-2">
+                              🔒 Your notes are secure and hidden from all other views
+                            </p>
+                            <p className="text-xs text-white/90 font-medium">{folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  // Regular folder styling
                   return (
                     <div
                       key={folder._id}
                       onClick={() => handleFolderClick(folder)}
                       className={`bg-gradient-to-br ${getColorClasses(folder.color)} rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg flex flex-col items-center justify-center text-center group relative`}
                     >
-                      {!folder.isPrivate && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteFolder(folder._id);
-                          }}
-                          className="absolute top-2 right-2 w-5 h-5 bg-white/20 hover:bg-white/30 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                        >
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteFolder(folder._id);
+                        }}
+                        className="absolute top-2 right-2 w-5 h-5 bg-white/20 hover:bg-white/30 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                      >
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                       <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-2">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -1249,7 +1280,11 @@ export default function Dashboard() {
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
             <div className="max-w-7xl mx-auto p-6">
               {/* Header Section */}
-              <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
+              <div className={`rounded-2xl p-6 mb-6 shadow-sm border ${
+                selectedFolder.isPrivate 
+                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 border-blue-400' 
+                  : 'bg-white border-gray-200'
+              }`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <button
@@ -1257,26 +1292,53 @@ export default function Dashboard() {
                         setSelectedFolder(null);
                         setActiveView('folders');
                       }}
-                      className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition"
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
+                        selectedFolder.isPrivate
+                          ? 'bg-white/20 hover:bg-white/30 backdrop-blur-sm'
+                          : 'bg-gray-100 hover:bg-gray-200'
+                      }`}
                     >
-                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-5 h-5 ${selectedFolder.isPrivate ? 'text-white' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                       </svg>
                     </button>
-                    <div className={`w-14 h-14 bg-gradient-to-br ${getColorClasses(selectedFolder.color)} rounded-2xl flex items-center justify-center`}>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+                      selectedFolder.isPrivate
+                        ? 'bg-white/20 backdrop-blur-sm'
+                        : `bg-gradient-to-br ${getColorClasses(selectedFolder.color)}`
+                    }`}>
                       <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        {selectedFolder.isPrivate ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        )}
                       </svg>
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold text-gray-900">{selectedFolder.name}</h1>
-                      <p className="text-sm text-gray-500">{folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}</p>
+                      <div className="flex items-center gap-2">
+                        <h1 className={`text-2xl font-bold ${selectedFolder.isPrivate ? 'text-white' : 'text-gray-900'}`}>
+                          {selectedFolder.name}
+                        </h1>
+                        {selectedFolder.isPrivate && (
+                          <span className="px-2 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-xs text-white font-medium">
+                            🔒 PIN Protected
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-sm ${selectedFolder.isPrivate ? 'text-blue-100' : 'text-gray-500'}`}>
+                        {folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setShowAddToFolderModal(true)}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm"
+                      className={`font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm ${
+                        selectedFolder.isPrivate
+                          ? 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white'
+                          : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      }`}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1324,6 +1386,8 @@ export default function Dashboard() {
                 <NotesGrid
                   notes={folderNotes}
                   onSelectNote={setSelectedNote}
+                  onDeleteNote={handleDeleteNote}
+                  onShareNote={handleShareSingleNote}
                   onRemoveFromFolder={handleRemoveNoteFromFolder}
                   showRemoveButton={true}
                 />
@@ -2266,7 +2330,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
@@ -2307,7 +2371,7 @@ export default function Dashboard() {
                     setPinError('');
                   }}
                   placeholder="••••"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none text-center text-2xl font-bold tracking-widest"
+                  className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-center text-2xl font-bold tracking-widest"
                   autoFocus
                 />
                 {pinError && (
@@ -2339,7 +2403,7 @@ export default function Dashboard() {
                 <button
                   type="submit"
                   disabled={pinInput.length !== 4}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   {pendingFolder.pin ? 'Unlock' : 'Set PIN'}
                 </button>
