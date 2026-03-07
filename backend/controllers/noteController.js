@@ -244,3 +244,27 @@ exports.removeCollaborator = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+exports.togglePin = async (req, res) => {
+  try {
+    const note = await Note.findOne({
+      _id: req.params.id,
+      owner: req.user.id,
+      deleted: false
+    });
+
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found or unauthorized' });
+    }
+
+    note.isPinned = !note.isPinned;
+    await note.save();
+    await note.populate('owner', 'name email');
+    await note.populate('collaborators', 'name email');
+    await note.populate('lastEditedBy', 'name email');
+
+    res.json(note);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

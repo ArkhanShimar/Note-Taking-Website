@@ -28,8 +28,8 @@ export default function Sidebar({ activeView, setActiveView, onCreateNote }) {
             </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">NotesHub</h1>
-            <p className="text-sm text-gray-500">Your workspace</p>
+            <h1 className="text-xl font-bold text-gray-900">Notely</h1>
+            <p className="text-sm text-gray-500">Organize your thoughts</p>
           </div>
         </div>
 

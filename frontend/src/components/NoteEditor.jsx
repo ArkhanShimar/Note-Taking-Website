@@ -17,9 +17,25 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
   const [shareError, setShareError] = useState('');
   const [toast, setToast] = useState(null);
   const [isSaved, setIsSaved] = useState(false); // Track if note was manually saved
+  const [wordCount, setWordCount] = useState(0);
   const { user } = useAuth();
   const quillRef = useRef(null);
   const autoSaveTimerRef = useRef(null);
+
+  // Calculate word count
+  const calculateWordCount = useCallback((htmlContent) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = htmlContent;
+    const text = tmp.textContent || tmp.innerText || '';
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+    return words.length;
+  }, []);
+
+  // Update word count when content changes
+  useEffect(() => {
+    const count = calculateWordCount(content);
+    setWordCount(count);
+  }, [content, calculateWordCount]);
 
   // Image handler for React Quill
   const imageHandler = useCallback(() => {
@@ -77,6 +93,76 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
       setIsSaved(false); // Reset saved state when switching notes
     }
   }, [note?._id]); // Only reset when note ID changes, not when isDraft changes
+
+  // Add image resize functionality
+  useEffect(() => {
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return;
+
+    const handleImageClick = (e) => {
+      if (e.target.tagName === 'IMG') {
+        const img = e.target;
+        
+        // Remove previous selection
+        const allImages = editor.root.querySelectorAll('img');
+        allImages.forEach(i => i.classList.remove('selected'));
+        
+        // Add selection to clicked image
+        img.classList.add('selected');
+        
+        // Make image resizable
+        if (!img.style.width) {
+          img.style.width = img.naturalWidth + 'px';
+        }
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        img.style.cursor = 'nwse-resize';
+        
+        // Add resize functionality
+        let isResizing = false;
+        let startX, startWidth;
+        
+        const startResize = (e) => {
+          if (e.target === img) {
+            isResizing = true;
+            startX = e.clientX;
+            startWidth = parseInt(window.getComputedStyle(img).width, 10);
+            e.preventDefault();
+          }
+        };
+        
+        const resize = (e) => {
+          if (isResizing) {
+            const width = startWidth + (e.clientX - startX);
+            if (width > 100 && width <= editor.root.offsetWidth) {
+              img.style.width = width + 'px';
+            }
+          }
+        };
+        
+        const stopResize = () => {
+          isResizing = false;
+        };
+        
+        img.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', stopResize);
+        
+        // Cleanup
+        return () => {
+          img.removeEventListener('mousedown', startResize);
+          document.removeEventListener('mousemove', resize);
+          document.removeEventListener('mouseup', stopResize);
+        };
+      }
+    };
+
+    editor.root.addEventListener('click', handleImageClick);
+    
+    return () => {
+      editor.root.removeEventListener('click', handleImageClick);
+    };
+  }, [content]);
 
   // Auto-save as draft when content changes
   useEffect(() => {
@@ -301,14 +387,15 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
-      <div className="bg-white border-b border-slate-200 px-3 sm:px-6 py-3 sm:py-4 shadow-sm">
+    <div className="flex-1 flex flex-col bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+      {/* Header */}
+      <div className="bg-white border-b-2 border-indigo-100 px-4 sm:px-6 py-4 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto">
+          <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto">
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-3 sm:px-5 py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md text-sm whitespace-nowrap"
+              className="px-4 sm:px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg text-sm whitespace-nowrap"
             >
               {saving ? (
                 <span className="flex items-center gap-2">
@@ -327,10 +414,10 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
                 </span>
               )}
             </button>
-            <span className="text-xs sm:text-sm text-slate-500 whitespace-nowrap">
+            <span className="text-xs sm:text-sm whitespace-nowrap">
               {autoSaving ? (
-                <span className="flex items-center gap-2 text-amber-600">
-                  <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                <span className="flex items-center gap-2 text-amber-600 font-medium">
+                  <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -338,10 +425,15 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
                   <span className="sm:hidden">Saving...</span>
                 </span>
               ) : note.isDraft ? (
-                <span className="text-amber-600">Draft</span>
+                <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-lg font-medium">Draft</span>
               ) : (
                 <span className="flex flex-col gap-0.5">
-                  <span className="hidden sm:inline">Saved</span>
+                  <span className="flex items-center gap-1.5 text-green-600 font-medium">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="hidden sm:inline">Saved</span>
+                  </span>
                   {!note.isDraft && (
                     <div className="flex flex-col gap-0.5 text-xs">
                       {note.owner && (
@@ -359,12 +451,19 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
                 </span>
               )}
             </span>
+            {/* Word Count */}
+            <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {wordCount} {wordCount === 1 ? 'word' : 'words'}
+            </span>
           </div>
           <div className="flex items-center gap-2 overflow-x-auto">
             <div className="relative">
               <button
                 onClick={() => setShowFolderMenu(!showFolderMenu)}
-                className="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-2 whitespace-nowrap"
+                className="px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition flex items-center gap-2 whitespace-nowrap border border-indigo-200"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -373,10 +472,10 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
                 <span className="sm:hidden">Folder</span>
               </button>
               {showFolderMenu && (
-                <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-slate-200 py-2 min-w-[200px] z-10">
+                <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border-2 border-indigo-100 py-2 min-w-[200px] z-10">
                   <button
                     onClick={() => handleMoveToFolder(null)}
-                    className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 font-medium transition"
                   >
                     No Folder
                   </button>
@@ -384,7 +483,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
                     <button
                       key={folder._id}
                       onClick={() => handleMoveToFolder(folder._id)}
-                      className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                      className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 font-medium transition"
                     >
                       {folder.name}
                     </button>
@@ -394,7 +493,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
             </div>
             <button
               onClick={() => setShowShareModal(true)}
-              className="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-2 whitespace-nowrap"
+              className="px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-xl transition flex items-center gap-2 whitespace-nowrap border border-purple-200"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -404,7 +503,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
             {isOwner && (
               <button
                 onClick={handleDelete}
-                className="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition flex items-center gap-2 whitespace-nowrap"
+                className="px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition flex items-center gap-2 whitespace-nowrap border border-red-200"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -416,17 +515,18 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-white">
-        <div className="max-w-4xl mx-auto p-4 sm:p-8">
+      {/* Editor Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-5xl mx-auto p-4 sm:p-8">
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Untitled Note"
-            className="w-full text-2xl sm:text-4xl font-bold text-slate-800 bg-transparent border-none outline-none mb-4 sm:mb-8 placeholder-slate-300 focus:placeholder-slate-400"
+            className="w-full text-3xl sm:text-5xl font-bold text-gray-900 bg-transparent border-none outline-none mb-6 sm:mb-8 placeholder-gray-300 focus:placeholder-gray-400"
           />
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-3 sm:p-6">
+          <div className="bg-white rounded-2xl shadow-lg border-2 border-indigo-100 p-4 sm:p-6 hover:border-indigo-200 transition">
             <ReactQuill
               ref={quillRef}
               theme="snow"
@@ -434,7 +534,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
               onChange={setContent}
               modules={modules}
               placeholder="Start writing your note..."
-              className="min-h-[300px] sm:min-h-[500px]"
+              className="min-h-[300px] sm:min-h-[500px] editor-custom"
             />
           </div>
         </div>

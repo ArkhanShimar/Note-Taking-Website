@@ -360,6 +360,21 @@ export default function Dashboard() {
     }
   };
 
+  const handleTogglePin = async (note) => {
+    try {
+      const updated = await noteService.togglePin(note._id);
+      setNotes(notes.map(n => n._id === note._id ? updated : n));
+      setToast({ 
+        message: updated.isPinned ? 'Note pinned successfully!' : 'Note unpinned successfully!', 
+        type: 'success' 
+      });
+    } catch (error) {
+      console.error('Failed to toggle pin:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to update note. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
+    }
+  };
+
   const handleShareSingleNote = (note) => {
     setNoteToShare(note);
     setShowSingleNoteShareModal(true);
@@ -575,6 +590,11 @@ export default function Dashboard() {
   };
 
   const sortedNotes = [...notes].sort((a, b) => {
+    // Pinned notes always come first
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    
+    // Then sort by the selected criteria
     if (sortBy === 'updated') {
       return new Date(b.updatedAt) - new Date(a.updatedAt);
     } else if (sortBy === 'created') {
@@ -938,6 +958,7 @@ export default function Dashboard() {
                     onDeleteNote={handleDeleteNote}
                     onShareNote={handleShareSingleNote}
                     onAddToFolder={handleOpenAddToFolder}
+                    onTogglePin={handleTogglePin}
                   />
                   
                   {/* Pagination */}
@@ -1390,6 +1411,7 @@ export default function Dashboard() {
                   onShareNote={handleShareSingleNote}
                   onRemoveFromFolder={handleRemoveNoteFromFolder}
                   showRemoveButton={true}
+                  onTogglePin={handleTogglePin}
                 />
               )}
             </div>
@@ -1478,8 +1500,8 @@ export default function Dashboard() {
                   </div>
                   <h3 className="text-base font-bold text-gray-900 mb-1">Email</h3>
                   <p className="text-gray-600 text-xs mb-2">Send us an email anytime</p>
-                  <a href="mailto:support@notesapp.lk" className="text-green-600 hover:text-green-700 font-semibold text-sm">
-                    support@notesapp.lk
+                  <a href="mailto:support@notely.app" className="text-green-600 hover:text-green-700 font-semibold text-sm">
+                    support@notely.app
                   </a>
                   <p className="text-gray-500 text-xs mt-1">We'll respond within 24 hours</p>
                 </div>
@@ -1702,7 +1724,7 @@ export default function Dashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h1 className="text-lg font-bold text-gray-900">NotesHub</h1>
+            <h1 className="text-lg font-bold text-gray-900">Notely</h1>
           </div>
           <div className="flex items-center gap-2">
             <button

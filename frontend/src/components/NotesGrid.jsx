@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, showRemoveButton, onDeleteNote, onShareNote, onAddToFolder }) {
+export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, showRemoveButton, onDeleteNote, onShareNote, onAddToFolder, onTogglePin }) {
   const [previewNote, setPreviewNote] = useState(null);
   const [deleteConfirmNote, setDeleteConfirmNote] = useState(null);
 
@@ -76,9 +76,18 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
             
             <div>
               <div className="flex items-start justify-between mb-3">
-                <h3 className="font-bold text-gray-900 text-lg truncate flex-1 group-hover:text-indigo-600 transition">
-                  {note.title || 'Untitled'}
-                </h3>
+                <div className="flex items-center gap-2 flex-1">
+                  {note.isPinned && (
+                    <div className="bg-yellow-50 rounded-lg p-1 flex-shrink-0">
+                      <svg className="w-3.5 h-3.5 text-yellow-600" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                      </svg>
+                    </div>
+                  )}
+                  <h3 className="font-bold text-gray-900 text-lg truncate flex-1 group-hover:text-indigo-600 transition">
+                    {note.title || 'Untitled'}
+                  </h3>
+                </div>
                 {note.collaborators && note.collaborators.length > 0 && (
                   <div className="bg-purple-50 rounded-lg p-1.5 flex-shrink-0 ml-2">
                     <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,6 +103,24 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
               
               {/* Action Buttons */}
               <div className="flex items-center justify-center gap-1.5 mb-3 pb-3 border-b border-gray-100">
+                {onTogglePin && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTogglePin(note);
+                    }}
+                    className={`w-7 h-7 hover:scale-110 rounded-lg flex items-center justify-center transition-all ${
+                      note.isPinned 
+                        ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200' 
+                        : 'bg-gray-50 text-gray-400 hover:bg-yellow-50 hover:text-yellow-600'
+                    }`}
+                    title={note.isPinned ? 'Unpin note' : 'Pin note'}
+                  >
+                    <svg className="w-3.5 h-3.5" fill={note.isPinned ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                  </button>
+                )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

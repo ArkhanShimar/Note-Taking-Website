@@ -44,5 +44,10 @@ export const noteService = {
   async removeCollaborator(noteId, collaboratorId) {
     const response = await api.delete(`/notes/${noteId}/collaborators/${collaboratorId}`);
     return response.data;
+  },
+
+  async togglePin(noteId) {
+    const response = await api.patch(`/notes/${noteId}/pin`);
+    return response.data;
   }
 };

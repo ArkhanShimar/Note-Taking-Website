@@ -1,7 +1,7 @@
 {
-  "name": "collaborative-notes-backend",
+  "name": "notely-backend",
   "version": "1.0.0",
-  "description": "Backend for collaborative note-taking app",
+  "description": "Notely - Backend API for collaborative note-taking with beautiful organization",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
