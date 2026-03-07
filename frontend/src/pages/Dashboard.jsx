@@ -834,22 +834,109 @@ export default function Dashboard() {
           </div>
         );
 
-      case 'contacts':
+      case 'contact':
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
-            <div className="max-w-7xl mx-auto p-8">
-              <div className="mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">Contacts</h1>
-                <p className="text-gray-600">Manage your collaborators</p>
+            <div className="max-w-6xl mx-auto p-6">
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-1">Contact Us</h1>
+                <p className="text-sm text-gray-600">Get in touch with our team. We're here to help!</p>
               </div>
-              <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
+
+              {/* Contact Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {/* Phone */}
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition">
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mb-3">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900 mb-1">Phone</h3>
+                  <p className="text-gray-600 text-xs mb-2">Call us during business hours</p>
+                  <a href="tel:+94112345678" className="text-indigo-600 hover:text-indigo-700 font-semibold text-sm">
+                    +94 11 234 5678
+                  </a>
+                  <p className="text-gray-500 text-xs mt-1">Mon-Fri, 9:00 AM - 6:00 PM</p>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Contacts coming soon</h3>
-                <p className="text-gray-600">This feature is under development</p>
+
+                {/* Email */}
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-3">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900 mb-1">Email</h3>
+                  <p className="text-gray-600 text-xs mb-2">Send us an email anytime</p>
+                  <a href="mailto:support@notesapp.lk" className="text-green-600 hover:text-green-700 font-semibold text-sm">
+                    support@notesapp.lk
+                  </a>
+                  <p className="text-gray-500 text-xs mt-1">We'll respond within 24 hours</p>
+                </div>
+
+                {/* Location */}
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition">
+                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-3">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900 mb-1">Office</h3>
+                  <p className="text-gray-600 text-xs mb-2">Visit us at our location</p>
+                  <p className="text-orange-600 font-semibold text-sm">
+                    123 Galle Road, Colombo 03
+                  </p>
+                  <p className="text-gray-500 text-xs mt-1">Sri Lanka</p>
+                </div>
+              </div>
+
+              {/* Contact Form */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Send us a Message</h2>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Your Name</label>
+                      <input
+                        type="text"
+                        placeholder="John Doe"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
+                      <input
+                        type="email"
+                        placeholder="john@example.com"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Subject</label>
+                    <input
+                      type="text"
+                      placeholder="How can we help you?"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Message</label>
+                    <textarea
+                      rows="4"
+                      placeholder="Tell us more about your inquiry..."
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none text-sm"
+                    ></textarea>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full md:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition shadow-sm hover:shadow-md text-sm"
+                  >
+                    Send Message
+                  </button>
+                </form>
               </div>
             </div>
           </div>
