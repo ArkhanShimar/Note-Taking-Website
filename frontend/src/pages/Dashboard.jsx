@@ -43,6 +43,9 @@ export default function Dashboard() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const notesPerPage = 12;
+  
+  // Mobile menu state
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   useEffect(() => {
     loadNotes();
@@ -420,27 +423,42 @@ export default function Dashboard() {
   if (selectedNote) {
     return (
       <div className="flex h-screen bg-gray-50">
-        <Sidebar
-          activeView={activeView}
-          setActiveView={(view) => {
-            setActiveView(view);
-            setSelectedNote(null);
-            setShowDrafts(false); // Reset drafts view when changing views
-          }}
-          onCreateNote={handleCreateNote}
-        />
-        <div className="flex-1 flex flex-col">
-          <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block">
+          <Sidebar
+            activeView={activeView}
+            setActiveView={(view) => {
+              setActiveView(view);
+              setSelectedNote(null);
+              setShowDrafts(false); // Reset drafts view when changing views
+            }}
+            onCreateNote={handleCreateNote}
+          />
+        </div>
+        
+        {/* Mobile Header for Editor */}
+        <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+          <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={handleBackToView}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition text-sm"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               Back
             </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+            </div>
           </div>
+        </div>
+        
+        <div className="flex-1 flex flex-col pt-14 md:pt-0">
           <NoteEditor
             note={selectedNote}
             onUpdate={handleUpdateNote}
@@ -481,12 +499,12 @@ export default function Dashboard() {
 
         return (
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
-            <div className="max-w-7xl mx-auto p-6">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6">
               {/* Header Section */}
-              <div className="bg-gradient-to-r from-white via-indigo-50/30 to-purple-50/30 rounded-2xl p-6 mb-6 shadow-md border-2 border-indigo-100">
-                <div className="flex items-center justify-between mb-4">
+              <div className="bg-gradient-to-r from-white via-indigo-50/30 to-purple-50/30 rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-md border-2 border-indigo-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                   <div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
+                    <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
                       {showDrafts ? 'Drafts' : activeView === 'all-notes' ? 'My Notes' : 'Shared Notes'}
                     </h1>
                     <p className="text-sm text-gray-600">
@@ -529,7 +547,7 @@ export default function Dashboard() {
 
                 {/* Search and Filters - Hide when showing drafts */}
                 {!showDrafts && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <div className="relative flex-1">
                     <svg
                       className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
@@ -622,11 +640,11 @@ export default function Dashboard() {
                   
                   {/* Pagination */}
                   {displayTotalPages > 1 && (
-                    <div className="mt-6 flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
-                      <div className="text-sm text-gray-600">
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+                      <div className="text-sm text-gray-600 text-center sm:text-left">
                         Showing {((currentPage - 1) * notesPerPage) + 1} to {Math.min(currentPage * notesPerPage, displayNotes.length)} of {displayNotes.length} notes
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap justify-center">
                         <button
                           onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                           disabled={currentPage === 1}
@@ -793,29 +811,29 @@ export default function Dashboard() {
 
             {showCreateFolderModal && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6">Create New Folder</h3>
+                <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-8">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Create New Folder</h3>
                   <form onSubmit={handleCreateFolder}>
-                    <div className="mb-6">
+                    <div className="mb-4 sm:mb-6">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Folder Name</label>
                       <input
                         type="text"
                         value={newFolderName}
                         onChange={(e) => setNewFolderName(e.target.value)}
                         placeholder="e.g., Work, Personal, Projects"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
                         autoFocus
                       />
                     </div>
-                    <div className="mb-6">
+                    <div className="mb-4 sm:mb-6">
                       <label className="block text-sm font-semibold text-gray-700 mb-3">Color</label>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                         {colorOptions.map((color) => (
                           <button
                             key={color.value}
                             type="button"
                             onClick={() => setNewFolderColor(color.value)}
-                            className={`w-10 h-10 rounded-full bg-gradient-to-br ${color.from} ${color.to} transition-all ${
+                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br ${color.from} ${color.to} transition-all ${
                               newFolderColor === color.value 
                                 ? 'ring-4 ring-offset-2 ring-indigo-500 scale-110' 
                                 : 'hover:scale-110'
@@ -825,7 +843,7 @@ export default function Dashboard() {
                         ))}
                       </div>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                       <button
                         type="button"
                         onClick={() => {
@@ -833,13 +851,13 @@ export default function Dashboard() {
                           setNewFolderName('');
                           setNewFolderColor('indigo');
                         }}
-                        className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition"
+                        className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition"
+                        className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition text-sm"
                       >
                         Create
                       </button>
@@ -964,41 +982,41 @@ export default function Dashboard() {
 
             {showAddToFolderModal && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 max-h-[80vh] overflow-y-auto">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900">Add Note to {selectedFolder.name}</h3>
+                <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-8 max-h-[80vh] overflow-y-auto">
+                  <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Add Note to {selectedFolder.name}</h3>
                     <button
                       onClick={() => setShowAddToFolderModal(false)}
                       className="text-gray-400 hover:text-gray-600"
                     >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   </div>
 
                   {availableNotes.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-600">No notes available to add. All notes are already in folders.</p>
+                    <div className="text-center py-8 text-gray-600">
+                      <p className="text-sm">No notes available to add. All notes are already in folders.</p>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {availableNotes.map((note) => (
                         <div
                           key={note._id}
                           onClick={() => handleAddNoteToFolder(note._id, selectedFolder._id)}
-                          className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition"
+                          className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition"
                         >
-                          <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 truncate">{note.title || 'Untitled'}</p>
-                            <p className="text-sm text-gray-500">{new Date(note.updatedAt).toLocaleDateString()}</p>
+                            <p className="font-semibold text-gray-900 truncate text-sm sm:text-base">{note.title || 'Untitled'}</p>
+                            <p className="text-xs sm:text-sm text-gray-500">{new Date(note.updatedAt).toLocaleDateString()}</p>
                           </div>
-                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
                         </div>
@@ -1261,22 +1279,194 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar
-        activeView={activeView}
-        setActiveView={(view) => {
-          setActiveView(view);
-          setShowDrafts(false); // Reset drafts view when changing views
-        }}
-        onCreateNote={handleCreateNote}
-      />
-      {renderContent()}
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h1 className="text-lg font-bold text-gray-900">NotesHub</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCreateNote}
+              className="w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center transition shadow-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full flex items-center justify-center transition"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && (
+        <div className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50" onClick={() => setShowMobileMenu(false)}>
+          <div className="absolute right-0 top-0 bottom-0 w-64 bg-white/95 backdrop-blur-xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-200/50 flex items-center justify-between">
+              <h2 className="text-base font-bold text-gray-900">Menu</h2>
+              <button
+                onClick={() => setShowMobileMenu(false)}
+                className="w-7 h-7 bg-gray-100/80 hover:bg-gray-200/80 rounded-lg flex items-center justify-center transition"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Navigation Menu */}
+            <div className="p-3">
+              <div className="space-y-1 mb-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">Navigation</p>
+                <button
+                  onClick={() => {
+                    setActiveView('dashboard');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm ${
+                    activeView === 'dashboard'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-100/80'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveView('all-notes');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm ${
+                    activeView === 'all-notes'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-100/80'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  All Notes
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveView('shared');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm ${
+                    activeView === 'shared'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-100/80'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  Shared Notes
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveView('folders');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm ${
+                    activeView === 'folders'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-100/80'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  Folders
+                </button>
+              </div>
+
+              {/* Account Section */}
+              <div className="border-t border-gray-200/50 pt-3">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">Account</p>
+                <div className="space-y-1">
+                  <button
+                    onClick={() => {
+                      setActiveView('profile');
+                      setShowMobileMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-100/80"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveView('contact');
+                      setShowMobileMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-100/80"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Contact
+                  </button>
+                  <button
+                    onClick={() => {
+                      authService.logout();
+                      window.location.href = '/login';
+                    }}
+                    className="w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm text-red-600 hover:bg-red-50/80 font-medium"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar
+          activeView={activeView}
+          setActiveView={(view) => {
+            setActiveView(view);
+            setShowDrafts(false);
+          }}
+          onCreateNote={handleCreateNote}
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col pt-14 md:pt-0">
+        {renderContent()}
+      </div>
 
       {/* Share Notes Modal */}
       {showShareNotesModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-8 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Share Notes</h3>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-4 sm:p-8 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Share Notes</h3>
               <button
                 onClick={() => {
                   setShowShareNotesModal(false);
@@ -1286,14 +1476,14 @@ export default function Dashboard() {
                 }}
                 className="text-gray-400 hover:text-gray-600 transition"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             {shareError && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-start gap-3">
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-start gap-2 sm:gap-3">
                 <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -1302,8 +1492,8 @@ export default function Dashboard() {
             )}
 
             <form onSubmit={handleShareNotes}>
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
                   Share with (email address)
                 </label>
                 <input
@@ -1314,15 +1504,15 @@ export default function Dashboard() {
                     setShareError(''); // Clear error when user types
                   }}
                   placeholder="colleague@example.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
                   required
                 />
               </div>
 
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
+              <div className="mb-4 sm:mb-6">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
                   <label className="block text-sm font-semibold text-gray-700">
-                    Select notes to share ({selectedNotesForSharing.length} selected)
+                    Select notes ({selectedNotesForSharing.length})
                   </label>
                   {filteredNotes.length > 0 && (
                     <button
@@ -1334,7 +1524,7 @@ export default function Dashboard() {
                           setSelectedNotesForSharing(filteredNotes.map(n => n._id));
                         }
                       }}
-                      className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                      className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                     >
                       {selectedNotesForSharing.length === filteredNotes.length ? 'Deselect All' : 'Select All'}
                     </button>
@@ -1343,40 +1533,40 @@ export default function Dashboard() {
 
                 {filteredNotes.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    <p>No notes available to share. Create a note first.</p>
+                    <p className="text-sm">No notes available to share. Create a note first.</p>
                   </div>
                 ) : (
-                  <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl">
+                  <div className="max-h-64 sm:max-h-96 overflow-y-auto border border-gray-200 rounded-xl">
                     <div className="divide-y divide-gray-200">
                       {filteredNotes.map((note) => (
                         <div
                           key={note._id}
                           onClick={() => toggleNoteSelection(note._id)}
-                          className={`flex items-center gap-4 p-4 cursor-pointer transition ${
+                          className={`flex items-center gap-2 sm:gap-4 p-3 sm:p-4 cursor-pointer transition ${
                             selectedNotesForSharing.includes(note._id)
                               ? 'bg-indigo-50 border-l-4 border-indigo-600'
                               : 'hover:bg-gray-50'
                           }`}
                         >
-                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition ${
+                          <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition ${
                             selectedNotesForSharing.includes(note._id)
                               ? 'bg-indigo-600 border-indigo-600'
                               : 'border-gray-300'
                           }`}>
                             {selectedNotesForSharing.includes(note._id) && (
-                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                               </svg>
                             )}
                           </div>
-                          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 truncate">{note.title || 'Untitled'}</p>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <p className="font-semibold text-gray-900 truncate text-sm">{note.title || 'Untitled'}</p>
+                            <div className="flex items-center gap-1 sm:gap-2 text-xs text-gray-500">
                               <span>{new Date(note.updatedAt).toLocaleDateString()}</span>
                               {note.collaborators && note.collaborators.length > 0 && (
                                 <>
@@ -1398,7 +1588,7 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -1407,14 +1597,14 @@ export default function Dashboard() {
                     setShareEmail('');
                     setShareError('');
                   }}
-                  className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={selectedNotesForSharing.length === 0}
-                  className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   Share {selectedNotesForSharing.length > 0 && `(${selectedNotesForSharing.length})`}
                 </button>
