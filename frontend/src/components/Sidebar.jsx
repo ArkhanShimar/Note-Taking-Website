@@ -18,7 +18,7 @@ export default function Sidebar({ activeView, setActiveView, onCreateNote }) {
   ];
 
   return (
-    <div className="w-72 bg-white border-r border-gray-200 flex flex-col h-screen">
+    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-screen">
       {/* Logo */}
       <div className="p-5">
         <div className="flex items-center gap-3 mb-5">
