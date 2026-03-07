@@ -1,5 +1,5 @@
-export default function DashboardHome({ notes, onSelectNote, onCreateNote }) {
-  const recentNotes = notes.slice(0, 6);
+export default function DashboardHome({ notes, drafts, onSelectNote, onCreateNote, onNavigate, onShowDrafts }) {
+  const recentNotes = notes.slice(0, 3);
   
   const stats = {
     totalNotes: notes.length,
@@ -8,7 +8,8 @@ export default function DashboardHome({ notes, onSelectNote, onCreateNote }) {
       const today = new Date();
       const noteDate = new Date(n.createdAt);
       return noteDate.toDateString() === today.toDateString();
-    }).length
+    }).length,
+    draftNotes: drafts ? drafts.length : 0
   };
 
   const stripHtml = (html) => {
@@ -29,10 +30,13 @@ export default function DashboardHome({ notes, onSelectNote, onCreateNote }) {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
-          <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 hover:shadow-md transition">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <button
+            onClick={() => onNavigate('all-notes')}
+            className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 hover:shadow-lg hover:border-indigo-300 transition text-left group"
+          >
             <div className="flex items-center justify-center mb-2">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -40,11 +44,14 @@ export default function DashboardHome({ notes, onSelectNote, onCreateNote }) {
             </div>
             <p className="text-xl sm:text-2xl font-bold text-gray-900 text-center">{stats.totalNotes}</p>
             <p className="text-xs text-gray-600 text-center">Total Notes</p>
-          </div>
+          </button>
 
-          <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 hover:shadow-md transition">
+          <button
+            onClick={() => onNavigate('shared')}
+            className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 hover:shadow-lg hover:border-purple-300 transition text-left group"
+          >
             <div className="flex items-center justify-center mb-2">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
@@ -52,11 +59,29 @@ export default function DashboardHome({ notes, onSelectNote, onCreateNote }) {
             </div>
             <p className="text-xl sm:text-2xl font-bold text-gray-900 text-center">{stats.sharedNotes}</p>
             <p className="text-xs text-gray-600 text-center">Shared Notes</p>
-          </div>
+          </button>
 
-          <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 hover:shadow-md transition">
+          <button
+            onClick={onShowDrafts}
+            className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 hover:shadow-lg hover:border-orange-300 transition text-left group"
+          >
             <div className="flex items-center justify-center mb-2">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </div>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900 text-center">{stats.draftNotes}</p>
+            <p className="text-xs text-gray-600 text-center">Draft Notes</p>
+          </button>
+
+          <button
+            onClick={() => onNavigate('all-notes')}
+            className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 hover:shadow-lg hover:border-green-300 transition text-left group"
+          >
+            <div className="flex items-center justify-center mb-2">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -64,7 +89,7 @@ export default function DashboardHome({ notes, onSelectNote, onCreateNote }) {
             </div>
             <p className="text-xl sm:text-2xl font-bold text-gray-900 text-center">{stats.todayNotes}</p>
             <p className="text-xs text-gray-600 text-center">Created Today</p>
-          </div>
+          </button>
         </div>
 
         {/* Quick Actions */}
@@ -93,7 +118,7 @@ export default function DashboardHome({ notes, onSelectNote, onCreateNote }) {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-gray-900">Recent Notes</h2>
             <button
-              onClick={() => {}}
+              onClick={() => onNavigate('all-notes')}
               className="text-indigo-600 hover:text-indigo-700 font-medium text-xs flex items-center gap-1"
             >
               View all
@@ -120,7 +145,7 @@ export default function DashboardHome({ notes, onSelectNote, onCreateNote }) {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {recentNotes.map((note) => (
                 <div
                   key={note._id}

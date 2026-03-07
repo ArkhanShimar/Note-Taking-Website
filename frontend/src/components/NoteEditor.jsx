@@ -23,11 +23,12 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
       setTitle(note.title || '');
       setContent(note.content || '');
     }
-  }, [note?._id]);
+  }, [note?._id, note?.title, note?.content, note?.isDraft]);
 
   // Auto-save as draft when content changes
   useEffect(() => {
     if (!note) return;
+    if (saving) return; // Don't auto-save while manually saving
 
     // Clear existing timer
     if (autoSaveTimerRef.current) {
@@ -36,7 +37,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
 
     // Set new timer for auto-save (2 seconds after user stops typing)
     autoSaveTimerRef.current = setTimeout(async () => {
-      if (title || content) {
+      if ((title || content) && !saving) {
         setAutoSaving(true);
         try {
           const updated = await noteService.updateNote(note._id, title, content, note.folder, true); // Save as draft
@@ -55,10 +56,15 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders }) {
         clearTimeout(autoSaveTimerRef.current);
       }
     };
-  }, [title, content, note]);
+  }, [title, content, note, saving]);
 
   const handleSave = async () => {
     if (!note) return;
+
+    // Clear auto-save timer
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
 
     setSaving(true);
     try {

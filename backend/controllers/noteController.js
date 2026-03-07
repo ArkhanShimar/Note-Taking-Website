@@ -2,16 +2,19 @@ const Note = require('../models/Note');
 
 exports.createNote = async (req, res) => {
   try {
-    const { title, content, folder } = req.body;
+    const { title, content, folder, isDraft } = req.body;
 
     const note = await Note.create({
       title,
       content: content || '',
       owner: req.user.id,
-      folder: folder || null
+      folder: folder || null,
+      isDraft: isDraft !== undefined ? isDraft : false, // Default to published (false) unless specified
+      lastEditedBy: req.user.id
     });
 
     await note.populate('owner', 'name email');
+    await note.populate('lastEditedBy', 'name email');
 
     res.status(201).json(note);
   } catch (error) {

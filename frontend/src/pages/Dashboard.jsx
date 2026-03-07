@@ -26,11 +26,17 @@ export default function Dashboard() {
   const [newFolderColor, setNewFolderColor] = useState('indigo');
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [showAddToFolderModal, setShowAddToFolderModal] = useState(false);
+  const [noteToAddToFolder, setNoteToAddToFolder] = useState(null);
   const [toast, setToast] = useState(null);
   const [showShareNotesModal, setShowShareNotesModal] = useState(false);
+  const [showSingleNoteShareModal, setShowSingleNoteShareModal] = useState(false);
+  const [noteToShare, setNoteToShare] = useState(null);
+  const [singleNoteShareEmail, setSingleNoteShareEmail] = useState('');
   const [selectedNotesForSharing, setSelectedNotesForSharing] = useState([]);
   const [shareEmail, setShareEmail] = useState('');
+  const [shareEmails, setShareEmails] = useState([]);
   const [shareError, setShareError] = useState('');
+  const [shareNotesSearch, setShareNotesSearch] = useState('');
   
   // Profile form states
   const [profileName, setProfileName] = useState('');
@@ -46,6 +52,9 @@ export default function Dashboard() {
   
   // Mobile menu state
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  
+  // Shared notes filter state
+  const [sharedFilter, setSharedFilter] = useState('all'); // 'all', 'shared-with-me', 'i-shared'
 
   useEffect(() => {
     loadNotes();
@@ -120,6 +129,7 @@ export default function Dashboard() {
       const updated = await noteService.updateNote(noteId, undefined, undefined, folderId);
       setNotes(notes.map(n => n._id === noteId ? updated : n));
       setShowAddToFolderModal(false);
+      setNoteToAddToFolder(null);
       setToast({ message: 'Note added to folder successfully!', type: 'success' });
     } catch (error) {
       console.error('Failed to add note to folder:', error);
@@ -153,63 +163,107 @@ export default function Dashboard() {
     }
   };
 
+  const handleAddShareEmail = () => {
+    const email = shareEmail.trim();
+    if (!email) return;
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setShareError('Please enter a valid email address');
+      return;
+    }
+    
+    // Check if user is trying to share with themselves
+    if (email.toLowerCase() === user?.email?.toLowerCase()) {
+      setShareError('You cannot share notes with yourself');
+      return;
+    }
+    
+    // Check for duplicates
+    if (shareEmails.includes(email)) {
+      setShareError('This email has already been added');
+      return;
+    }
+    
+    setShareEmails([...shareEmails, email]);
+    setShareEmail('');
+    setShareError('');
+  };
+
+  const handleRemoveShareEmail = (emailToRemove) => {
+    setShareEmails(shareEmails.filter(email => email !== emailToRemove));
+  };
+
   const handleShareNotes = async (e) => {
     e.preventDefault();
     setShareError('');
     
-    if (!shareEmail.trim() || selectedNotesForSharing.length === 0) {
-      setShareError('Please select notes and enter an email address');
+    if (shareEmails.length === 0 || selectedNotesForSharing.length === 0) {
+      setShareError('Please add at least one email and select notes to share');
       return;
     }
 
-    let successCount = 0;
-    let failCount = 0;
-    let userNotFoundError = false;
+    let totalSuccess = 0;
+    let totalFail = 0;
+    let userNotFoundEmails = [];
     let lastError = '';
 
-    for (const noteId of selectedNotesForSharing) {
-      try {
-        const updated = await noteService.addCollaborator(noteId, shareEmail);
-        setNotes(notes.map(n => n._id === noteId ? updated : n));
-        successCount++;
-      } catch (error) {
-        console.error(`Failed to share note ${noteId}:`, error);
-        failCount++;
-        lastError = error.response?.data?.message || 'Failed to share note';
-        
-        // Check if it's a user not found error
-        if (lastError.toLowerCase().includes('user not found') || 
-            lastError.toLowerCase().includes('not found') ||
-            lastError.toLowerCase().includes('does not exist')) {
-          userNotFoundError = true;
+    // Share with each email
+    for (const email of shareEmails) {
+      let emailSuccessCount = 0;
+      let emailFailCount = 0;
+      
+      for (const noteId of selectedNotesForSharing) {
+        try {
+          const updated = await noteService.addCollaborator(noteId, email);
+          setNotes(notes.map(n => n._id === noteId ? updated : n));
+          emailSuccessCount++;
+          totalSuccess++;
+        } catch (error) {
+          console.error(`Failed to share note ${noteId} with ${email}:`, error);
+          emailFailCount++;
+          totalFail++;
+          lastError = error.response?.data?.message || 'Failed to share note';
+          
+          // Check if it's a user not found error
+          if (lastError.toLowerCase().includes('user not found') || 
+              lastError.toLowerCase().includes('not found') ||
+              lastError.toLowerCase().includes('does not exist')) {
+            if (!userNotFoundEmails.includes(email)) {
+              userNotFoundEmails.push(email);
+            }
+          }
         }
       }
     }
 
-    // If user not found, keep modal open and show error
-    if (userNotFoundError && successCount === 0) {
-      setShareError('User not found. Please check the email address and try again.');
+    // If all emails were not found
+    if (userNotFoundEmails.length === shareEmails.length && totalSuccess === 0) {
+      setShareError(`User(s) not found: ${userNotFoundEmails.join(', ')}. Please check the email addresses.`);
       return;
     }
 
-    // If there were other errors but some succeeded
-    if (failCount > 0 && successCount > 0) {
-      setShareError(`Shared ${successCount} notes successfully, but ${failCount} failed. ${lastError}`);
-      return;
-    }
-
-    // If all failed with non-user-not-found errors
-    if (failCount > 0 && successCount === 0 && !userNotFoundError) {
-      setShareError(lastError || 'Failed to share notes. Please try again.');
-      return;
+    // If some emails were not found
+    if (userNotFoundEmails.length > 0) {
+      setShareError(`Some users not found: ${userNotFoundEmails.join(', ')}. Other shares completed successfully.`);
+      // Don't return, let it continue to show success message
     }
 
     // Success - close modal and show toast
     setShowShareNotesModal(false);
     setSelectedNotesForSharing([]);
     setShareEmail('');
+    setShareEmails([]);
     setShareError('');
-    setToast({ message: `Successfully shared ${successCount} ${successCount === 1 ? 'note' : 'notes'}!`, type: 'success' });
+    setShareNotesSearch('');
+    
+    const noteCount = selectedNotesForSharing.length;
+    const emailCount = shareEmails.length - userNotFoundEmails.length;
+    setToast({ 
+      message: `Successfully shared ${noteCount} ${noteCount === 1 ? 'note' : 'notes'} with ${emailCount} ${emailCount === 1 ? 'person' : 'people'}!`, 
+      type: 'success' 
+    });
   };
 
   const toggleNoteSelection = (noteId) => {
@@ -239,9 +293,53 @@ export default function Dashboard() {
     setSelectedNote(updatedNote);
   };
 
-  const handleDeleteNote = (noteId) => {
-    setNotes(notes.filter(n => n._id !== noteId));
-    setSelectedNote(null);
+  const handleDeleteNote = async (noteId) => {
+    try {
+      await noteService.deleteNote(noteId);
+      setNotes(notes.filter(n => n._id !== noteId));
+      setDrafts(drafts.filter(n => n._id !== noteId));
+      setSelectedNote(null);
+      setToast({ message: 'Note deleted successfully!', type: 'success' });
+    } catch (error) {
+      console.error('Failed to delete note:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to delete note. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
+    }
+  };
+
+  const handleShareSingleNote = (note) => {
+    setNoteToShare(note);
+    setShowSingleNoteShareModal(true);
+    setSingleNoteShareEmail('');
+  };
+
+  const handleOpenAddToFolder = (note) => {
+    setNoteToAddToFolder(note);
+    setShowAddToFolderModal(true);
+  };
+
+  const handleShareSingleNoteSubmit = async (e) => {
+    e.preventDefault();
+    if (!singleNoteShareEmail.trim() || !noteToShare) return;
+
+    // Check if user is trying to share with themselves
+    if (singleNoteShareEmail.trim().toLowerCase() === user?.email?.toLowerCase()) {
+      setToast({ message: 'You cannot share notes with yourself', type: 'error' });
+      return;
+    }
+
+    try {
+      const updated = await noteService.addCollaborator(noteToShare._id, singleNoteShareEmail);
+      setNotes(notes.map(n => n._id === noteToShare._id ? updated : n));
+      setShowSingleNoteShareModal(false);
+      setSingleNoteShareEmail('');
+      setNoteToShare(null);
+      setToast({ message: 'Note shared successfully!', type: 'success' });
+    } catch (error) {
+      console.error('Failed to share note:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to share note. Please try again.';
+      setToast({ message: errorMessage, type: 'error' });
+    }
   };
 
   const handleSearch = async (e) => {
@@ -406,7 +504,7 @@ export default function Dashboard() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [dateFilter, searchQuery, showDrafts, activeView]);
+  }, [dateFilter, searchQuery, showDrafts, activeView, sharedFilter]);
 
   if (loading) {
     return (
@@ -477,8 +575,14 @@ export default function Dashboard() {
         return (
           <DashboardHome
             notes={filteredNotes}
+            drafts={drafts}
             onSelectNote={setSelectedNote}
             onCreateNote={handleCreateNote}
+            onNavigate={setActiveView}
+            onShowDrafts={() => {
+              setActiveView('all-notes');
+              setShowDrafts(true);
+            }}
           />
         );
 
@@ -492,7 +596,16 @@ export default function Dashboard() {
                 // OR notes they own that have collaborators (shared BY them)
                 const isCollaborator = note.collaborators && note.collaborators.some(collab => collab._id === user?.id || collab === user?.id);
                 const isOwnerWithCollaborators = note.owner._id === user?.id && note.collaborators && note.collaborators.length > 0;
-                return isCollaborator || isOwnerWithCollaborators;
+                
+                // Apply shared filter
+                if (sharedFilter === 'shared-with-me') {
+                  return isCollaborator && note.owner._id !== user?.id;
+                } else if (sharedFilter === 'i-shared') {
+                  return isOwnerWithCollaborators;
+                } else {
+                  // 'all' - show both
+                  return isCollaborator || isOwnerWithCollaborators;
+                }
               })
             : filteredNotes;
 
@@ -550,6 +663,44 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
+
+                {/* Shared Notes Filter Toggle - Only show in shared view */}
+                {activeView === 'shared' && !showDrafts && (
+                  <div className="flex justify-center mb-4">
+                    <div className="inline-flex items-center gap-1 bg-white rounded-xl p-1 shadow-sm border border-gray-200">
+                      <button
+                        onClick={() => setSharedFilter('all')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                          sharedFilter === 'all'
+                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                      >
+                        All
+                      </button>
+                      <button
+                        onClick={() => setSharedFilter('shared-with-me')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                          sharedFilter === 'shared-with-me'
+                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                      >
+                        Shared with me
+                      </button>
+                      <button
+                        onClick={() => setSharedFilter('i-shared')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                          sharedFilter === 'i-shared'
+                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                      >
+                        I shared
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Search and Filters - Hide when showing drafts */}
                 {!showDrafts && (
@@ -642,6 +793,9 @@ export default function Dashboard() {
                   <NotesGrid
                     notes={paginatedDisplayNotes}
                     onSelectNote={setSelectedNote}
+                    onDeleteNote={handleDeleteNote}
+                    onShareNote={handleShareSingleNote}
+                    onAddToFolder={handleOpenAddToFolder}
                   />
                   
                   {/* Pagination */}
@@ -1373,6 +1527,7 @@ export default function Dashboard() {
                   onClick={() => {
                     setActiveView('shared');
                     setShowMobileMenu(false);
+                    setSharedFilter('all'); // Reset shared filter
                   }}
                   className={`w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm ${
                     activeView === 'shared'
@@ -1457,6 +1612,7 @@ export default function Dashboard() {
           setActiveView={(view) => {
             setActiveView(view);
             setShowDrafts(false);
+            setSharedFilter('all'); // Reset shared filter when changing views
           }}
           onCreateNote={handleCreateNote}
         />
@@ -1478,7 +1634,9 @@ export default function Dashboard() {
                   setShowShareNotesModal(false);
                   setSelectedNotesForSharing([]);
                   setShareEmail('');
+                  setShareEmails([]);
                   setShareError('');
+                  setShareNotesSearch('');
                 }}
                 className="text-gray-400 hover:text-gray-600 transition"
               >
@@ -1500,19 +1658,59 @@ export default function Dashboard() {
             <form onSubmit={handleShareNotes}>
               <div className="mb-4 sm:mb-6">
                 <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
-                  Share with (email address)
+                  Share with (email addresses)
                 </label>
-                <input
-                  type="email"
-                  value={shareEmail}
-                  onChange={(e) => {
-                    setShareEmail(e.target.value);
-                    setShareError(''); // Clear error when user types
-                  }}
-                  placeholder="colleague@example.com"
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
-                  required
-                />
+                
+                {/* Email Tags Display */}
+                {shareEmails.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                    {shareEmails.map((email, index) => (
+                      <div
+                        key={index}
+                        className="inline-flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-medium"
+                      >
+                        <span>{email}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveShareEmail(email)}
+                          className="hover:bg-indigo-200 rounded-full p-0.5 transition"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Email Input */}
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={shareEmail}
+                    onChange={(e) => {
+                      setShareEmail(e.target.value);
+                      setShareError('');
+                    }}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddShareEmail();
+                      }
+                    }}
+                    placeholder="colleague@example.com"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddShareEmail}
+                    className="px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition text-sm whitespace-nowrap"
+                  >
+                    Add
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Press Enter or click Add to add multiple email addresses</p>
               </div>
 
               <div className="mb-4 sm:mb-6">
@@ -1520,21 +1718,57 @@ export default function Dashboard() {
                   <label className="block text-sm font-semibold text-gray-700">
                     Select notes ({selectedNotesForSharing.length})
                   </label>
-                  {filteredNotes.length > 0 && (
+                  {filteredNotes.filter(note => {
+                    if (!shareNotesSearch.trim()) return true;
+                    const searchLower = shareNotesSearch.toLowerCase();
+                    return (note.title || '').toLowerCase().includes(searchLower) ||
+                           (note.content || '').toLowerCase().includes(searchLower);
+                  }).length > 0 && (
                     <button
                       type="button"
                       onClick={() => {
-                        if (selectedNotesForSharing.length === filteredNotes.length) {
+                        const searchFilteredNotes = filteredNotes.filter(note => {
+                          if (!shareNotesSearch.trim()) return true;
+                          const searchLower = shareNotesSearch.toLowerCase();
+                          return (note.title || '').toLowerCase().includes(searchLower) ||
+                                 (note.content || '').toLowerCase().includes(searchLower);
+                        });
+                        
+                        if (selectedNotesForSharing.length === searchFilteredNotes.length) {
                           setSelectedNotesForSharing([]);
                         } else {
-                          setSelectedNotesForSharing(filteredNotes.map(n => n._id));
+                          setSelectedNotesForSharing(searchFilteredNotes.map(n => n._id));
                         }
                       }}
                       className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                     >
-                      {selectedNotesForSharing.length === filteredNotes.length ? 'Deselect All' : 'Select All'}
+                      {selectedNotesForSharing.length === filteredNotes.filter(note => {
+                        if (!shareNotesSearch.trim()) return true;
+                        const searchLower = shareNotesSearch.toLowerCase();
+                        return (note.title || '').toLowerCase().includes(searchLower) ||
+                               (note.content || '').toLowerCase().includes(searchLower);
+                      }).length ? 'Deselect All' : 'Select All'}
                     </button>
                   )}
+                </div>
+
+                {/* Search Bar for Notes */}
+                <div className="relative mb-3">
+                  <svg
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    type="text"
+                    value={shareNotesSearch}
+                    onChange={(e) => setShareNotesSearch(e.target.value)}
+                    placeholder="Search notes by title or content..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-gray-50"
+                  />
                 </div>
 
                 {filteredNotes.length === 0 ? (
@@ -1544,7 +1778,14 @@ export default function Dashboard() {
                 ) : (
                   <div className="max-h-64 sm:max-h-96 overflow-y-auto border border-gray-200 rounded-xl">
                     <div className="divide-y divide-gray-200">
-                      {filteredNotes.map((note) => (
+                      {filteredNotes
+                        .filter(note => {
+                          if (!shareNotesSearch.trim()) return true;
+                          const searchLower = shareNotesSearch.toLowerCase();
+                          return (note.title || '').toLowerCase().includes(searchLower) ||
+                                 (note.content || '').toLowerCase().includes(searchLower);
+                        })
+                        .map((note) => (
                         <div
                           key={note._id}
                           onClick={() => toggleNoteSelection(note._id)}
@@ -1601,7 +1842,9 @@ export default function Dashboard() {
                     setShowShareNotesModal(false);
                     setSelectedNotesForSharing([]);
                     setShareEmail('');
+                    setShareEmails([]);
                     setShareError('');
+                    setShareNotesSearch('');
                   }}
                   className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm"
                 >
@@ -1609,10 +1852,10 @@ export default function Dashboard() {
                 </button>
                 <button
                   type="submit"
-                  disabled={selectedNotesForSharing.length === 0}
+                  disabled={selectedNotesForSharing.length === 0 || shareEmails.length === 0}
                   className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
-                  Share {selectedNotesForSharing.length > 0 && `(${selectedNotesForSharing.length})`}
+                  Share {selectedNotesForSharing.length > 0 && shareEmails.length > 0 && `(${selectedNotesForSharing.length} notes, ${shareEmails.length} ${shareEmails.length === 1 ? 'person' : 'people'})`}
                 </button>
               </div>
             </form>
@@ -1620,7 +1863,149 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Single Note Share Modal */}
+      {showSingleNoteShareModal && noteToShare && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-8">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Share Note</h3>
+              <button
+                onClick={() => {
+                  setShowSingleNoteShareModal(false);
+                  setNoteToShare(null);
+                  setSingleNoteShareEmail('');
+                }}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <div className="bg-indigo-50 rounded-xl p-3 sm:p-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm truncate">{noteToShare.title || 'Untitled'}</p>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      {noteToShare.collaborators?.length || 0} {noteToShare.collaborators?.length === 1 ? 'collaborator' : 'collaborators'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleShareSingleNoteSubmit}>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Share with (email address)
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                  <input
+                    type="email"
+                    value={singleNoteShareEmail}
+                    onChange={(e) => setSingleNoteShareEmail(e.target.value)}
+                    placeholder="colleague@example.com"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                    required
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition text-sm whitespace-nowrap"
+                  >
+                    Share
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowSingleNoteShareModal(false);
+                setNoteToShare(null);
+                setSingleNoteShareEmail('');
+              }}
+              className="w-full px-4 py-2 sm:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {/* Add Note to Folder Modal (for single note) */}
+      {showAddToFolderModal && noteToAddToFolder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-8">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Add to Folder</h3>
+              <button
+                onClick={() => {
+                  setShowAddToFolderModal(false);
+                  setNoteToAddToFolder(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="bg-indigo-50 rounded-xl p-3 sm:p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900 text-sm truncate">{noteToAddToFolder.title || 'Untitled'}</p>
+                  <p className="text-xs text-gray-600 mt-0.5">Select a folder below</p>
+                </div>
+              </div>
+            </div>
+
+            {folders.length === 0 ? (
+              <div className="text-center py-8 text-gray-600">
+                <p className="text-sm">No folders available. Create a folder first.</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {folders.map((folder) => (
+                  <button
+                    key={folder._id}
+                    onClick={() => handleAddNoteToFolder(noteToAddToFolder._id, folder._id)}
+                    className={`w-full flex items-center gap-3 p-3 border-2 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition ${
+                      noteToAddToFolder.folder === folder._id ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200'
+                    }`}
+                  >
+                    <div className={`w-10 h-10 bg-gradient-to-br ${getColorClasses(folder.color)} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="font-semibold text-gray-900 text-sm truncate">{folder.name}</p>
+                      <p className="text-xs text-gray-500">{notes.filter(n => n.folder === folder._id).length} notes</p>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

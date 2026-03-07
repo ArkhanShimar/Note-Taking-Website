@@ -30,7 +30,7 @@ const noteSchema = new mongoose.Schema({
   },
   isDraft: {
     type: Boolean,
-    default: true
+    default: false
   },
   lastEditedBy: {
     type: mongoose.Schema.Types.ObjectId,
