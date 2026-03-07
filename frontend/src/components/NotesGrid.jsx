@@ -173,10 +173,19 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
                     </svg>
                     {formatDate(note.updatedAt)}
                   </span>
-                  {note.lastEditedBy && (
-                    <span className="text-xs text-indigo-600 font-medium">
-                      by {note.lastEditedBy.name}
-                    </span>
+                  {!note.isDraft && (
+                    <div className="flex flex-col gap-0.5">
+                      {note.owner && (
+                        <span className="text-xs text-gray-600">
+                          Created by {note.owner.name}
+                        </span>
+                      )}
+                      {note.lastEditedBy && note.lastEditedBy._id !== note.owner?._id && (
+                        <span className="text-xs text-indigo-600 font-medium">
+                          Edited by {note.lastEditedBy.name}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -214,10 +223,18 @@ export default function NotesGrid({ notes, onSelectNote, onRemoveFromFolder, sho
                       </span>
                     )}
                   </div>
-                  {previewNote.lastEditedBy && (
-                    <span className="text-white/80 text-xs">
-                      Last edited by {previewNote.lastEditedBy.name}
-                    </span>
+                  {!previewNote.isDraft && (
+                    <div className="flex items-center gap-3 text-white/80 text-xs">
+                      {previewNote.owner && (
+                        <span>Created by {previewNote.owner.name}</span>
+                      )}
+                      {previewNote.lastEditedBy && previewNote.lastEditedBy._id !== previewNote.owner?._id && (
+                        <>
+                          <span>•</span>
+                          <span>Edited by {previewNote.lastEditedBy.name}</span>
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
