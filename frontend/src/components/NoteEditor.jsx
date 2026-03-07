@@ -259,6 +259,12 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
       await noteService.deleteNote(note._id);
       onDelete(note._id);
       setToast({ message: 'Note deleted successfully!', type: 'success' });
+      // Navigate back to dashboard after deletion
+      setTimeout(() => {
+        if (onBackToNotes) {
+          onBackToNotes();
+        }
+      }, 500);
     } catch (error) {
       console.error('Failed to delete note:', error);
       const errorMessage = error.response?.data?.message || 'Failed to delete note. Please try again.';
@@ -387,9 +393,9 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+    <div className="flex-1 flex flex-col bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors">
       {/* Header */}
-      <div className="bg-white border-b-2 border-indigo-100 px-4 sm:px-6 py-4 shadow-sm">
+      <div className="bg-white dark:bg-gray-900 border-b-2 border-indigo-100 dark:border-gray-800 px-4 sm:px-6 py-4 shadow-sm transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto">
             <button
@@ -523,10 +529,10 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Untitled Note"
-            className="w-full text-3xl sm:text-5xl font-bold text-gray-900 bg-transparent border-none outline-none mb-6 sm:mb-8 placeholder-gray-300 focus:placeholder-gray-400"
+            className="w-full text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none mb-6 sm:mb-8 placeholder-gray-300 dark:placeholder-gray-600 focus:placeholder-gray-400 dark:focus:placeholder-gray-500 transition-colors"
           />
 
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-indigo-100 p-4 sm:p-6 hover:border-indigo-200 transition">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border-2 border-indigo-100 dark:border-gray-800 p-4 sm:p-6 hover:border-indigo-200 dark:hover:border-gray-700 transition-colors">
             <ReactQuill
               ref={quillRef}
               theme="snow"
@@ -541,13 +547,13 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
       </div>
 
       {showShareModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-4 sm:p-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center p-4 z-50 transition-colors">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-4 sm:p-8 max-h-[90vh] overflow-y-auto transition-colors">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-xl sm:text-2xl font-bold text-slate-800">Share Note</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">Share Note</h3>
               <button
                 onClick={() => setShowShareModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition"
+                className="text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -558,7 +564,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
             {isOwner && (
               <>
                 {shareError && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2">
+                  <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg text-sm flex items-start gap-2 transition-colors">
                     <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -567,23 +573,23 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
                 )}
                 
                 <form onSubmit={handleAddCollaborator} className="mb-6 sm:mb-8">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2 sm:mb-3">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-gray-300 mb-2 sm:mb-3">
                     Add collaborators by email
                   </label>
                   
                   {/* Email Tags Display */}
                   {collaboratorEmails.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex flex-wrap gap-2 mb-3 p-3 bg-slate-50 dark:bg-gray-700 rounded-lg border border-slate-200 dark:border-gray-600 transition-colors">
                       {collaboratorEmails.map((email, index) => (
                         <div
                           key={index}
-                          className="inline-flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-medium"
+                          className="inline-flex items-center gap-1.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm font-medium"
                         >
                           <span>{email}</span>
                           <button
                             type="button"
                             onClick={() => handleRemoveCollaboratorEmail(email)}
-                            className="hover:bg-indigo-200 rounded-full p-0.5 transition"
+                            className="hover:bg-indigo-200 dark:hover:bg-indigo-800 rounded-full p-0.5 transition"
                           >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -609,7 +615,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
                         }
                       }}
                       placeholder="colleague@example.com"
-                      className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
+                      className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-slate-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                     />
                     <button
                       type="submit"
@@ -618,7 +624,7 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
                       Add
                     </button>
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">Press Enter or click Add to add multiple email addresses</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Press Enter or click Add to add multiple email addresses</p>
                 </form>
                 
                 {collaboratorEmails.length > 0 && (
@@ -633,36 +639,36 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
             )}
 
             <div>
-              <h4 className="text-sm font-semibold text-slate-700 mb-3 sm:mb-4">People with access</h4>
+              <h4 className="text-sm font-semibold text-slate-700 dark:text-gray-300 mb-3 sm:mb-4">People with access</h4>
               <div className="space-y-2 sm:space-y-3">
-                <div className="flex items-center justify-between p-3 sm:p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                <div className="flex items-center justify-between p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded-lg transition-colors">
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
                       {note.owner.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-800 truncate">{note.owner.name}</p>
-                      <p className="text-xs text-slate-600 truncate">{note.owner.email}</p>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">{note.owner.name}</p>
+                      <p className="text-xs text-slate-600 dark:text-gray-400 truncate">{note.owner.email}</p>
                     </div>
                   </div>
                   <span className="text-xs bg-blue-600 text-white px-2 sm:px-3 py-1 rounded-full font-medium flex-shrink-0 ml-2">Owner</span>
                 </div>
 
                 {note.collaborators && note.collaborators.map((collab) => (
-                  <div key={collab._id} className="flex items-center justify-between p-3 sm:p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                  <div key={collab._id} className="flex items-center justify-between p-3 sm:p-4 bg-slate-50 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-lg transition-colors">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-400 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-400 dark:bg-gray-500 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
                         {collab.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-slate-800 truncate">{collab.name}</p>
-                        <p className="text-xs text-slate-600 truncate">{collab.email}</p>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">{collab.name}</p>
+                        <p className="text-xs text-slate-600 dark:text-gray-400 truncate">{collab.email}</p>
                       </div>
                     </div>
                     {isOwner && (
                       <button
                         onClick={() => handleRemoveCollaborator(collab._id)}
-                        className="text-xs sm:text-sm text-red-600 hover:text-red-700 font-medium flex-shrink-0 ml-2"
+                        className="text-xs sm:text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium flex-shrink-0 ml-2"
                       >
                         Remove
                       </button>
@@ -671,14 +677,14 @@ export default function NoteEditor({ note, onUpdate, onDelete, folders, onBackTo
                 ))}
 
                 {(!note.collaborators || note.collaborators.length === 0) && (
-                  <p className="text-sm text-slate-500 text-center py-4">No collaborators yet</p>
+                  <p className="text-sm text-slate-500 dark:text-gray-400 text-center py-4">No collaborators yet</p>
                 )}
               </div>
             </div>
 
             <button
               onClick={() => setShowShareModal(false)}
-              className="w-full mt-4 sm:mt-6 px-4 py-2 sm:py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition text-sm"
+              className="w-full mt-4 sm:mt-6 px-4 py-2 sm:py-3 bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-700 dark:text-gray-200 font-medium rounded-lg transition text-sm"
             >
               Close
             </button>

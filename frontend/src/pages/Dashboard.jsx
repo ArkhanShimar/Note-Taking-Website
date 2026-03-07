@@ -8,9 +8,11 @@ import { noteService } from '../services/noteService';
 import { folderService } from '../services/folderService';
 import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [notes, setNotes] = useState([]);
   const [drafts, setDrafts] = useState([]);
   const [showDrafts, setShowDrafts] = useState(false);
@@ -579,12 +581,12 @@ export default function Dashboard() {
 
   const getColorClasses = (color) => {
     const colorMap = {
-      indigo: 'from-indigo-500 to-purple-600',
-      green: 'from-green-500 to-emerald-600',
-      orange: 'from-orange-500 to-red-600',
-      blue: 'from-blue-500 to-cyan-600',
-      pink: 'from-pink-500 to-rose-600',
-      yellow: 'from-yellow-500 to-orange-600',
+      indigo: 'from-indigo-600 dark:from-indigo-700 to-purple-700 dark:to-purple-800',
+      green: 'from-green-600 dark:from-green-700 to-emerald-700 dark:to-emerald-800',
+      orange: 'from-orange-600 dark:from-orange-700 to-red-700 dark:to-red-800',
+      blue: 'from-blue-600 dark:from-blue-700 to-cyan-700 dark:to-cyan-800',
+      pink: 'from-pink-600 dark:from-pink-700 to-rose-700 dark:to-rose-800',
+      yellow: 'from-yellow-600 dark:from-yellow-700 to-orange-700 dark:to-orange-800',
     };
     return colorMap[color] || colorMap.indigo;
   };
@@ -646,10 +648,10 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950 transition-colors">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading your workspace...</p>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Loading your workspace...</p>
         </div>
       </div>
     );
@@ -658,7 +660,7 @@ export default function Dashboard() {
   // If a note is selected, show the editor
   if (selectedNote) {
     return (
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         {/* Desktop Sidebar */}
         <div className="hidden md:block">
           <Sidebar
@@ -673,11 +675,11 @@ export default function Dashboard() {
         </div>
         
         {/* Mobile Header for Editor */}
-        <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+        <div className="md:hidden fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-50 transition-colors">
           <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={handleBackToView}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition text-sm"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition text-sm"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -694,7 +696,7 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <div className="flex-1 flex flex-col pt-14 md:pt-0">
+        <div className="flex-1 flex flex-col pt-14 md:pt-0 md:ml-80">
           <NoteEditor
             note={selectedNote}
             onUpdate={handleUpdateNote}
@@ -779,16 +781,16 @@ export default function Dashboard() {
         const displayTotalPages = Math.ceil(displayNotes.length / notesPerPage);
 
         return (
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950 transition-colors">
             <div className="max-w-7xl mx-auto p-4 sm:p-6">
               {/* Header Section */}
-              <div className="bg-gradient-to-r from-white via-indigo-50/30 to-purple-50/30 rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-md border-2 border-indigo-100">
+              <div className="bg-gradient-to-r from-white via-indigo-50/30 to-purple-50/30 dark:from-gray-800 dark:via-indigo-950/30 dark:to-purple-950/30 rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-md border-2 border-indigo-100 dark:border-indigo-900/50 transition-colors">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                   <div>
                     <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
                       {showDrafts ? 'Drafts' : activeView === 'all-notes' ? 'My Notes' : 'Shared Notes'}
                     </h1>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {showDrafts 
                         ? 'Notes that are being edited and not yet saved'
                         : activeView === 'all-notes' 
@@ -802,8 +804,8 @@ export default function Dashboard() {
                         onClick={() => setShowDrafts(!showDrafts)}
                         className={`font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm shadow-sm ${
                           showDrafts
-                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-purple-200'
-                            : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-purple-200 dark:shadow-purple-900/50'
+                            : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
                         }`}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -829,13 +831,13 @@ export default function Dashboard() {
                 {/* Shared Notes Filter Toggle - Only show in shared view */}
                 {activeView === 'shared' && !showDrafts && (
                   <div className="flex justify-center mb-4">
-                    <div className="inline-flex items-center gap-1 bg-white rounded-xl p-1 shadow-sm border border-gray-200">
+                    <div className="inline-flex items-center gap-1 bg-white dark:bg-gray-800 rounded-xl p-1 shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
                       <button
                         onClick={() => setSharedFilter('all')}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                           sharedFilter === 'all'
                             ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >
                         All
@@ -845,7 +847,7 @@ export default function Dashboard() {
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                           sharedFilter === 'shared-with-me'
                             ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >
                         Shared with me
@@ -855,7 +857,7 @@ export default function Dashboard() {
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                           sharedFilter === 'i-shared'
                             ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >
                         I shared
@@ -869,7 +871,7 @@ export default function Dashboard() {
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <div className="relative flex-1">
                     <svg
-                      className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -881,17 +883,17 @@ export default function Dashboard() {
                       value={searchQuery}
                       onChange={handleSearch}
                       placeholder="Search notes by title or content..."
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-gray-50 hover:bg-white transition"
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-gray-50 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 transition text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     />
                   </div>
 
-                  <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+                  <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1 transition-colors">
                     <button
                       onClick={() => setDateFilter('all')}
                       className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
                         dateFilter === 'all'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
                       All
@@ -900,8 +902,8 @@ export default function Dashboard() {
                       onClick={() => setDateFilter('today')}
                       className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
                         dateFilter === 'today'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
                       Today
@@ -910,8 +912,8 @@ export default function Dashboard() {
                       onClick={() => setDateFilter('week')}
                       className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
                         dateFilter === 'week'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
                       This Week
@@ -920,8 +922,8 @@ export default function Dashboard() {
                       onClick={() => setDateFilter('month')}
                       className={`px-4 py-2 rounded-xl text-xs font-medium transition ${
                         dateFilter === 'month'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
                       This Month
@@ -932,14 +934,14 @@ export default function Dashboard() {
               </div>
 
               {displayNotes.length === 0 && activeView === 'shared' ? (
-                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-10 text-center">
-                  <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 p-10 text-center transition-colors">
+                  <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-7 h-7 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 mb-1">No shared notes yet</h3>
-                  <p className="text-sm text-gray-600 mb-4">Start collaborating by sharing your notes with others</p>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">No shared notes yet</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Start collaborating by sharing your notes with others</p>
                   <button
                     onClick={() => setShowShareNotesModal(true)}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition inline-flex items-center gap-2 text-sm"
@@ -963,15 +965,15 @@ export default function Dashboard() {
                   
                   {/* Pagination */}
                   {displayTotalPages > 1 && (
-                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
-                      <div className="text-sm text-gray-600 text-center sm:text-left">
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
                         Showing {((currentPage - 1) * notesPerPage) + 1} to {Math.min(currentPage * notesPerPage, displayNotes.length)} of {displayNotes.length} notes
                       </div>
                       <div className="flex items-center gap-2 flex-wrap justify-center">
                         <button
                           onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                           disabled={currentPage === 1}
-                          className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                          className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
                         >
                           Previous
                         </button>
@@ -992,7 +994,7 @@ export default function Dashboard() {
                                   className={`w-10 h-10 rounded-lg text-sm font-medium transition ${
                                     currentPage === pageNumber
                                       ? 'bg-indigo-600 text-white'
-                                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                      : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
                                   }`}
                                 >
                                   {pageNumber}
@@ -1002,7 +1004,7 @@ export default function Dashboard() {
                               pageNumber === currentPage - 2 ||
                               pageNumber === currentPage + 2
                             ) {
-                              return <span key={pageNumber} className="text-gray-400">...</span>;
+                              return <span key={pageNumber} className="text-gray-400 dark:text-gray-600">...</span>;
                             }
                             return null;
                           })}
@@ -1011,7 +1013,7 @@ export default function Dashboard() {
                         <button
                           onClick={() => setCurrentPage(prev => Math.min(prev + 1, displayTotalPages))}
                           disabled={currentPage === displayTotalPages}
-                          className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                          className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
                         >
                           Next
                         </button>
@@ -1035,14 +1037,14 @@ export default function Dashboard() {
         ];
 
         return (
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950 transition-colors">
             <div className="max-w-7xl mx-auto p-6">
               {/* Header Section */}
-              <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-200">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Folders</h1>
-                    <p className="text-sm text-gray-500">Organize your notes into folders for better management</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Folders</h1>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Organize your notes into folders for better management</p>
                   </div>
                   <button
                     onClick={() => setShowCreateFolderModal(true)}
@@ -1067,10 +1069,10 @@ export default function Dashboard() {
                       <div
                         key={folder._id}
                         onClick={() => handleFolderClick(folder)}
-                        className="col-span-2 bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 rounded-xl p-5 cursor-pointer transition-all hover:shadow-xl border-2 border-blue-400/30 group relative"
+                        className="col-span-2 bg-gradient-to-br from-blue-700 via-indigo-700 to-blue-800 dark:from-blue-800 dark:via-indigo-800 dark:to-blue-900 rounded-xl p-5 cursor-pointer transition-all hover:shadow-xl border-2 border-blue-500/30 dark:border-blue-700/30 group relative"
                       >
                         <div className="flex items-start gap-4">
-                          <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition">
+                          <div className="w-14 h-14 bg-white/20 dark:bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition">
                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
@@ -1078,11 +1080,11 @@ export default function Dashboard() {
                           <div className="flex-1 text-left">
                             <div className="flex items-center gap-2 mb-1">
                               <p className="text-sm font-bold text-white">{folder.name}</p>
-                              <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-md text-xs text-white font-medium">
+                              <span className="px-2 py-0.5 bg-white/20 dark:bg-white/10 backdrop-blur-sm rounded-md text-xs text-white font-medium">
                                 PIN Protected
                               </span>
                             </div>
-                            <p className="text-xs text-blue-100 mb-2">
+                            <p className="text-xs text-blue-100 dark:text-blue-200 mb-2">
                               🔒 Your notes are secure and hidden from all other views
                             </p>
                             <p className="text-xs text-white/90 font-medium">{folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}</p>
@@ -1097,26 +1099,26 @@ export default function Dashboard() {
                     <div
                       key={folder._id}
                       onClick={() => handleFolderClick(folder)}
-                      className={`bg-gradient-to-br ${getColorClasses(folder.color)} rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg flex flex-col items-center justify-center text-center group relative`}
+                      className={`bg-gradient-to-br ${getColorClasses(folder.color)} rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg dark:hover:shadow-black/30 flex flex-col items-center justify-center text-center group relative`}
                     >
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteFolder(folder._id);
                         }}
-                        className="absolute top-2 right-2 w-5 h-5 bg-white/20 hover:bg-white/30 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                        className="absolute top-2 right-2 w-5 h-5 bg-white/20 dark:bg-white/10 hover:bg-white/30 dark:hover:bg-white/20 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
                       >
                         <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
-                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-2">
+                      <div className="w-12 h-12 bg-white/20 dark:bg-white/10 rounded-xl flex items-center justify-center mb-2">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
                       </div>
                       <p className="text-xs font-bold text-white mb-0.5 truncate w-full">{folder.name}</p>
-                      <p className="text-xs text-white/80">{folderNotes.length} notes</p>
+                      <p className="text-xs text-white/80 dark:text-white/70">{folderNotes.length} notes</p>
                     </div>
                   );
                 })}
@@ -1132,12 +1134,12 @@ export default function Dashboard() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h2 className="text-xl font-bold text-gray-900">Recent Notes</h2>
-                        <p className="text-sm text-gray-600">Quick access to your latest notes</p>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recent Notes</h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Quick access to your latest notes</p>
                       </div>
                       <button
                         onClick={() => setActiveView('all-notes')}
-                        className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center gap-1 transition"
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium text-sm flex items-center gap-1 transition"
                       >
                         View all
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1153,7 +1155,7 @@ export default function Dashboard() {
                         <div
                           key={note._id}
                           onClick={() => setSelectedNote(note)}
-                          className="group bg-white rounded-xl border-2 border-gray-200 hover:border-indigo-400 p-4 cursor-pointer transition-all hover:shadow-lg"
+                          className="group bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 p-4 cursor-pointer transition-all hover:shadow-lg"
                         >
                           <div className="flex items-start gap-3 mb-3">
                             <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -1162,10 +1164,10 @@ export default function Dashboard() {
                               </svg>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-bold text-gray-900 truncate text-sm group-hover:text-indigo-600 transition">
+                              <h3 className="font-bold text-gray-900 dark:text-white truncate text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
                                 {note.title || 'Untitled'}
                               </h3>
-                              <p className="text-xs text-gray-500 mt-0.5">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                 {new Date(note.updatedAt).toLocaleDateString()}
                               </p>
                             </div>
@@ -1178,13 +1180,13 @@ export default function Dashboard() {
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                                 </svg>
                               </div>
-                              <span className="text-xs font-medium text-gray-700 truncate">{noteFolder.name}</span>
+                              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{noteFolder.name}</span>
                             </div>
                           )}
                           
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                             {note.collaborators && note.collaborators.length > 0 && (
-                              <span className="flex items-center gap-1 bg-purple-50 text-purple-600 px-2 py-1 rounded-md">
+                              <span className="flex items-center gap-1 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-1 rounded-md">
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
@@ -1192,7 +1194,7 @@ export default function Dashboard() {
                               </span>
                             )}
                             {note.isDraft && (
-                              <span className="flex items-center gap-1 bg-orange-50 text-orange-600 px-2 py-1 rounded-md">
+                              <span className="flex items-center gap-1 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-1 rounded-md">
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
@@ -1210,23 +1212,23 @@ export default function Dashboard() {
             </div>
 
             {showCreateFolderModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-8">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Create New Folder</h3>
+              <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center p-4 z-50 transition-colors">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-8 transition-colors">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">Create New Folder</h3>
                   <form onSubmit={handleCreateFolder}>
                     <div className="mb-4 sm:mb-6">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Folder Name</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Folder Name</label>
                       <input
                         type="text"
                         value={newFolderName}
                         onChange={(e) => setNewFolderName(e.target.value)}
                         placeholder="e.g., Work, Personal, Projects"
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                         autoFocus
                       />
                     </div>
                     <div className="mb-4 sm:mb-6">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">Color</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Color</label>
                       <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                         {colorOptions.map((color) => (
                           <button
@@ -1235,7 +1237,7 @@ export default function Dashboard() {
                             onClick={() => setNewFolderColor(color.value)}
                             className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br ${color.from} ${color.to} transition-all ${
                               newFolderColor === color.value 
-                                ? 'ring-4 ring-offset-2 ring-indigo-500 scale-110' 
+                                ? 'ring-4 ring-offset-2 dark:ring-offset-gray-800 ring-indigo-500 scale-110' 
                                 : 'hover:scale-110'
                             }`}
                             title={color.name}
@@ -1251,7 +1253,7 @@ export default function Dashboard() {
                           setNewFolderName('');
                           setNewFolderColor('indigo');
                         }}
-                        className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm"
+                        className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition text-sm"
                       >
                         Cancel
                       </button>
@@ -1298,14 +1300,14 @@ export default function Dashboard() {
         const availableNotes = notes.filter(n => !n.folder);
 
         return (
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950 transition-colors">
             <div className="max-w-7xl mx-auto p-6">
               {/* Header Section */}
               <div className={`rounded-2xl p-6 mb-6 shadow-sm border ${
                 selectedFolder.isPrivate 
                   ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 border-blue-400' 
-                  : 'bg-white border-gray-200'
-              }`}>
+                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+              } transition-colors`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <button
@@ -1316,10 +1318,10 @@ export default function Dashboard() {
                       className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
                         selectedFolder.isPrivate
                           ? 'bg-white/20 hover:bg-white/30 backdrop-blur-sm'
-                          : 'bg-gray-100 hover:bg-gray-200'
+                          : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
-                      <svg className={`w-5 h-5 ${selectedFolder.isPrivate ? 'text-white' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-5 h-5 ${selectedFolder.isPrivate ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                       </svg>
                     </button>
@@ -1338,7 +1340,7 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h1 className={`text-2xl font-bold ${selectedFolder.isPrivate ? 'text-white' : 'text-gray-900'}`}>
+                        <h1 className={`text-2xl font-bold ${selectedFolder.isPrivate ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                           {selectedFolder.name}
                         </h1>
                         {selectedFolder.isPrivate && (
@@ -1347,7 +1349,7 @@ export default function Dashboard() {
                           </span>
                         )}
                       </div>
-                      <p className={`text-sm ${selectedFolder.isPrivate ? 'text-blue-100' : 'text-gray-500'}`}>
+                      <p className={`text-sm ${selectedFolder.isPrivate ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
                         {folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}
                       </p>
                     </div>
@@ -1375,7 +1377,7 @@ export default function Dashboard() {
                             setActiveView('folders');
                           }
                         }}
-                        className="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm"
+                        className="bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-medium py-2 px-4 rounded-xl transition flex items-center gap-2 text-sm"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1388,14 +1390,14 @@ export default function Dashboard() {
               </div>
 
               {folderNotes.length === 0 ? (
-                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-10 text-center">
-                  <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 p-10 text-center transition-colors">
+                  <div className="w-14 h-14 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-7 h-7 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 mb-1">No notes in this folder</h3>
-                  <p className="text-sm text-gray-600 mb-3">Add notes to organize them in this folder</p>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">No notes in this folder</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Add notes to organize them in this folder</p>
                   <button
                     onClick={() => setShowAddToFolderModal(true)}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition text-sm"
@@ -1417,13 +1419,13 @@ export default function Dashboard() {
             </div>
 
             {showAddToFolderModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-8 max-h-[80vh] overflow-y-auto">
+              <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center p-4 z-50 transition-colors">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-8 max-h-[80vh] overflow-y-auto transition-colors">
                   <div className="flex items-center justify-between mb-4 sm:mb-6">
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Add Note to {selectedFolder.name}</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Add Note to {selectedFolder.name}</h3>
                     <button
                       onClick={() => setShowAddToFolderModal(false)}
-                      className="text-gray-400 hover:text-gray-600"
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition"
                     >
                       <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1432,7 +1434,7 @@ export default function Dashboard() {
                   </div>
 
                   {availableNotes.length === 0 ? (
-                    <div className="text-center py-8 text-gray-600">
+                    <div className="text-center py-8 text-gray-600 dark:text-gray-400">
                       <p className="text-sm">No notes available to add. All notes are already in folders.</p>
                     </div>
                   ) : (
@@ -1441,18 +1443,18 @@ export default function Dashboard() {
                         <div
                           key={note._id}
                           onClick={() => handleAddNoteToFolder(note._id, selectedFolder._id)}
-                          className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition"
+                          className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer transition"
                         >
-                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 truncate text-sm sm:text-base">{note.title || 'Untitled'}</p>
-                            <p className="text-xs sm:text-sm text-gray-500">{new Date(note.updatedAt).toLocaleDateString()}</p>
+                            <p className="font-semibold text-gray-900 dark:text-white truncate text-sm sm:text-base">{note.title || 'Untitled'}</p>
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{new Date(note.updatedAt).toLocaleDateString()}</p>
                           </div>
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
                         </div>
@@ -1467,98 +1469,98 @@ export default function Dashboard() {
 
       case 'contact':
         return (
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950 transition-colors">
             <div className="max-w-6xl mx-auto p-6">
               <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">Contact Us</h1>
-                <p className="text-sm text-gray-600">Get in touch with our team. We're here to help!</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Contact Us</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Get in touch with our team. We're here to help!</p>
               </div>
 
               {/* Contact Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {/* Phone */}
-                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all">
                   <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mb-3">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                   </div>
-                  <h3 className="text-base font-bold text-gray-900 mb-1">Phone</h3>
-                  <p className="text-gray-600 text-xs mb-2">Call us during business hours</p>
-                  <a href="tel:+94112345678" className="text-indigo-600 hover:text-indigo-700 font-semibold text-sm">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">Phone</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">Call us during business hours</p>
+                  <a href="tel:+94112345678" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold text-sm">
                     +94 11 234 5678
                   </a>
-                  <p className="text-gray-500 text-xs mt-1">Mon-Fri, 9:00 AM - 6:00 PM</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">Mon-Fri, 9:00 AM - 6:00 PM</p>
                 </div>
 
                 {/* Email */}
-                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-3">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <h3 className="text-base font-bold text-gray-900 mb-1">Email</h3>
-                  <p className="text-gray-600 text-xs mb-2">Send us an email anytime</p>
-                  <a href="mailto:support@notely.app" className="text-green-600 hover:text-green-700 font-semibold text-sm">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">Email</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">Send us an email anytime</p>
+                  <a href="mailto:support@notely.app" className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-semibold text-sm">
                     support@notely.app
                   </a>
-                  <p className="text-gray-500 text-xs mt-1">We'll respond within 24 hours</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">We'll respond within 24 hours</p>
                 </div>
 
                 {/* Location */}
-                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all">
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-3">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-base font-bold text-gray-900 mb-1">Office</h3>
-                  <p className="text-gray-600 text-xs mb-2">Visit us at our location</p>
-                  <p className="text-orange-600 font-semibold text-sm">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">Office</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">Visit us at our location</p>
+                  <p className="text-orange-600 dark:text-orange-400 font-semibold text-sm">
                     123 Galle Road, Colombo 03
                   </p>
-                  <p className="text-gray-500 text-xs mt-1">Sri Lanka</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">Sri Lanka</p>
                 </div>
               </div>
 
               {/* Contact Form */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Send us a Message</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Send us a Message</h2>
                 <form className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Your Name</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Your Name</label>
                       <input
                         type="text"
                         placeholder="John Doe"
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                        className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
                       <input
                         type="email"
                         placeholder="john@example.com"
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                        className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Subject</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Subject</label>
                     <input
                       type="text"
                       placeholder="How can we help you?"
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Message</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Message</label>
                     <textarea
                       rows="4"
                       placeholder="Tell us more about your inquiry..."
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none text-sm"
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                     ></textarea>
                   </div>
                   <button
@@ -1575,16 +1577,16 @@ export default function Dashboard() {
 
       case 'profile':
         return (
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950 transition-colors">
             <div className="max-w-4xl mx-auto p-6">
               <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">Profile Settings</h1>
-                <p className="text-sm text-gray-600">Manage your account information and preferences</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Profile Settings</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Manage your account information and preferences</p>
               </div>
 
               {/* Profile Information */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Profile Information</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-4 transition-colors">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Profile Information</h2>
                 <form onSubmit={handleUpdateProfile}>
                   <div className="flex items-start gap-6">
                     <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -1594,23 +1596,23 @@ export default function Dashboard() {
                     </div>
                     <div className="flex-1 space-y-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
                         <input
                           type="text"
                           value={profileName}
                           onChange={(e) => setProfileName(e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                          className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
                         <input
                           type="email"
                           value={user?.email || ''}
                           disabled
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed text-sm"
+                          className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 cursor-not-allowed text-sm"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Email cannot be changed</p>
                       </div>
                       <button 
                         type="submit"
@@ -1625,39 +1627,39 @@ export default function Dashboard() {
               </div>
 
               {/* Change Password */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Change Password</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-4 transition-colors">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Change Password</h2>
                 <form onSubmit={handleChangePassword}>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Current Password</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Current Password</label>
                       <input
                         type="password"
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="Enter current password"
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                        className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">New Password</label>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">New Password</label>
                         <input
                           type="password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="Enter new password"
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                          className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Confirm Password</label>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Confirm Password</label>
                         <input
                           type="password"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="Confirm new password"
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                          className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                         />
                       </div>
                     </div>
@@ -1673,30 +1675,30 @@ export default function Dashboard() {
               </div>
 
               {/* Account Statistics */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Account Statistics</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-4 transition-colors">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Account Statistics</h2>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-indigo-50 rounded-xl">
-                    <div className="text-2xl font-bold text-indigo-600">{notes.length}</div>
-                    <div className="text-xs text-gray-600 mt-1">Total Notes</div>
+                  <div className="text-center p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl transition-colors">
+                    <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{notes.length}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Notes</div>
                   </div>
-                  <div className="text-center p-4 bg-green-50 rounded-xl">
-                    <div className="text-2xl font-bold text-green-600">
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-900/30 rounded-xl transition-colors">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                       {notes.filter(n => n.collaborators && n.collaborators.length > 0).length}
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">Shared Notes</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Shared Notes</div>
                   </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-xl">
-                    <div className="text-2xl font-bold text-purple-600">{folders.length}</div>
-                    <div className="text-xs text-gray-600 mt-1">Folders</div>
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/30 rounded-xl transition-colors">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{folders.length}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Folders</div>
                   </div>
                 </div>
               </div>
 
               {/* Danger Zone */}
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-red-200">
-                <h2 className="text-xl font-bold text-red-600 mb-2">Danger Zone</h2>
-                <p className="text-sm text-gray-600 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-red-200 dark:border-red-900/50 transition-colors">
+                <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Danger Zone</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
                 <button 
                   onClick={handleDeleteAccount}
                   className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition shadow-sm hover:shadow-md text-sm"
@@ -1714,9 +1716,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+      <div className="md:hidden fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-50 transition-colors">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
@@ -1724,9 +1726,24 @@ export default function Dashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h1 className="text-lg font-bold text-gray-900">Notely</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">Notely</h1>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="w-9 h-9 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-full flex items-center justify-center transition"
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDark ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </button>
             <button
               onClick={handleCreateNote}
               className="w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center transition shadow-sm"
@@ -1737,7 +1754,7 @@ export default function Dashboard() {
             </button>
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full flex items-center justify-center transition"
+              className="w-9 h-9 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-full flex items-center justify-center transition"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -1750,14 +1767,14 @@ export default function Dashboard() {
       {/* Mobile Menu Overlay */}
       {showMobileMenu && (
         <div className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50" onClick={() => setShowMobileMenu(false)}>
-          <div className="absolute right-0 top-0 bottom-0 w-64 bg-white/95 backdrop-blur-xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b border-gray-200/50 flex items-center justify-between">
-              <h2 className="text-base font-bold text-gray-900">Menu</h2>
+          <div className="absolute right-0 top-0 bottom-0 w-64 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl shadow-2xl transition-colors" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
+              <h2 className="text-base font-bold text-gray-900 dark:text-white">Menu</h2>
               <button
                 onClick={() => setShowMobileMenu(false)}
-                className="w-7 h-7 bg-gray-100/80 hover:bg-gray-200/80 rounded-lg flex items-center justify-center transition"
+                className="w-7 h-7 bg-gray-100/80 dark:bg-gray-700/80 hover:bg-gray-200/80 dark:hover:bg-gray-600/80 rounded-lg flex items-center justify-center transition"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-900 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -1766,7 +1783,7 @@ export default function Dashboard() {
             {/* Navigation Menu */}
             <div className="p-3">
               <div className="space-y-1 mb-4">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">Navigation</p>
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 px-2">Navigation</p>
                 <button
                   onClick={() => {
                     setActiveView('dashboard');
@@ -1775,7 +1792,7 @@ export default function Dashboard() {
                   className={`w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm ${
                     activeView === 'dashboard'
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-100/80'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1791,7 +1808,7 @@ export default function Dashboard() {
                   className={`w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm ${
                     activeView === 'all-notes'
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-100/80'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1808,7 +1825,7 @@ export default function Dashboard() {
                   className={`w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm ${
                     activeView === 'shared'
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-100/80'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1824,7 +1841,7 @@ export default function Dashboard() {
                   className={`w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm ${
                     activeView === 'folders'
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-100/80'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1835,15 +1852,15 @@ export default function Dashboard() {
               </div>
 
               {/* Account Section */}
-              <div className="border-t border-gray-200/50 pt-3">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">Account</p>
+              <div className="border-t border-gray-200/50 dark:border-gray-700/50 pt-3">
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 px-2">Account</p>
                 <div className="space-y-1">
                   <button
                     onClick={() => {
                       setActiveView('profile');
                       setShowMobileMenu(false);
                     }}
-                    className="w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-100/80"
+                    className="w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -1855,7 +1872,7 @@ export default function Dashboard() {
                       setActiveView('contact');
                       setShowMobileMenu(false);
                     }}
-                    className="w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-100/80"
+                    className="w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -1867,7 +1884,7 @@ export default function Dashboard() {
                       authService.logout();
                       window.location.href = '/login';
                     }}
-                    className="w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm text-red-600 hover:bg-red-50/80 font-medium"
+                    className="w-full text-left px-3 py-2.5 rounded-lg transition flex items-center gap-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/20 font-medium"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -1895,16 +1912,16 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col pt-14 md:pt-0">
+      <div className="flex-1 flex flex-col pt-14 md:pt-0 md:ml-80">
         {renderContent()}
       </div>
 
       {/* Share Notes Modal */}
       {showShareNotesModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-4 sm:p-8 max-h-[85vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center p-4 z-50 transition-colors">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full p-4 sm:p-8 max-h-[85vh] overflow-y-auto transition-colors">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Share Notes</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Share Notes</h3>
               <button
                 onClick={() => {
                   setShowShareNotesModal(false);
@@ -1914,7 +1931,7 @@ export default function Dashboard() {
                   setShareError('');
                   setShareNotesSearch('');
                 }}
-                className="text-gray-400 hover:text-gray-600 transition"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1923,7 +1940,7 @@ export default function Dashboard() {
             </div>
 
             {shareError && (
-              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-start gap-2 sm:gap-3">
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl text-sm flex items-start gap-2 sm:gap-3 transition-colors">
                 <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -1933,23 +1950,23 @@ export default function Dashboard() {
 
             <form onSubmit={handleShareNotes}>
               <div className="mb-4 sm:mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">
                   Share with (email addresses)
                 </label>
                 
                 {/* Email Tags Display */}
                 {shareEmails.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="flex flex-wrap gap-2 mb-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 transition-colors">
                     {shareEmails.map((email, index) => (
                       <div
                         key={index}
-                        className="inline-flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-medium"
+                        className="inline-flex items-center gap-1.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm font-medium"
                       >
                         <span>{email}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveShareEmail(email)}
-                          className="hover:bg-indigo-200 rounded-full p-0.5 transition"
+                          className="hover:bg-indigo-200 dark:hover:bg-indigo-800 rounded-full p-0.5 transition"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1976,7 +1993,7 @@ export default function Dashboard() {
                       }
                     }}
                     placeholder="colleague@example.com"
-                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                   />
                   <button
                     type="button"
@@ -1986,12 +2003,12 @@ export default function Dashboard() {
                     Add
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Press Enter or click Add to add multiple email addresses</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Press Enter or click Add to add multiple email addresses</p>
               </div>
 
               <div className="mb-4 sm:mb-6">
                 <div className="flex items-center justify-between mb-2 sm:mb-3">
-                  <label className="block text-sm font-semibold text-gray-700">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                     Select notes ({selectedNotesForSharing.length})
                   </label>
                   {filteredNotes.filter(note => {
@@ -2016,7 +2033,7 @@ export default function Dashboard() {
                           setSelectedNotesForSharing(searchFilteredNotes.map(n => n._id));
                         }
                       }}
-                      className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                      className="text-xs sm:text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
                     >
                       {selectedNotesForSharing.length === filteredNotes.filter(note => {
                         if (!shareNotesSearch.trim()) return true;
@@ -2031,7 +2048,7 @@ export default function Dashboard() {
                 {/* Search Bar for Notes */}
                 <div className="relative mb-3">
                   <svg
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -2043,17 +2060,17 @@ export default function Dashboard() {
                     value={shareNotesSearch}
                     onChange={(e) => setShareNotesSearch(e.target.value)}
                     placeholder="Search notes by title or content..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-gray-50"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                   />
                 </div>
 
                 {filteredNotes.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <p className="text-sm">No notes available to share. Create a note first.</p>
                   </div>
                 ) : (
-                  <div className="max-h-64 sm:max-h-96 overflow-y-auto border border-gray-200 rounded-xl">
-                    <div className="divide-y divide-gray-200">
+                  <div className="max-h-64 sm:max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl transition-colors">
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
                       {filteredNotes
                         .filter(note => {
                           if (!shareNotesSearch.trim()) return true;
@@ -2067,14 +2084,14 @@ export default function Dashboard() {
                           onClick={() => toggleNoteSelection(note._id)}
                           className={`flex items-center gap-2 sm:gap-4 p-3 sm:p-4 cursor-pointer transition ${
                             selectedNotesForSharing.includes(note._id)
-                              ? 'bg-indigo-50 border-l-4 border-indigo-600'
-                              : 'hover:bg-gray-50'
+                              ? 'bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-indigo-600'
+                              : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
                           }`}
                         >
                           <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition ${
                             selectedNotesForSharing.includes(note._id)
                               ? 'bg-indigo-600 border-indigo-600'
-                              : 'border-gray-300'
+                              : 'border-gray-300 dark:border-gray-600'
                           }`}>
                             {selectedNotesForSharing.includes(note._id) && (
                               <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2082,14 +2099,14 @@ export default function Dashboard() {
                               </svg>
                             )}
                           </div>
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 truncate text-sm">{note.title || 'Untitled'}</p>
-                            <div className="flex items-center gap-1 sm:gap-2 text-xs text-gray-500">
+                            <p className="font-semibold text-gray-900 dark:text-white truncate text-sm">{note.title || 'Untitled'}</p>
+                            <div className="flex items-center gap-1 sm:gap-2 text-xs text-gray-500 dark:text-gray-400">
                               <span>{new Date(note.updatedAt).toLocaleDateString()}</span>
                               {note.collaborators && note.collaborators.length > 0 && (
                                 <>
@@ -2122,7 +2139,7 @@ export default function Dashboard() {
                     setShareError('');
                     setShareNotesSearch('');
                   }}
-                  className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition text-sm"
                 >
                   Cancel
                 </button>
@@ -2141,10 +2158,10 @@ export default function Dashboard() {
 
       {/* Single Note Share Modal */}
       {showSingleNoteShareModal && noteToShare && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-8">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center p-4 z-50 transition-colors">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-8 transition-colors">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Share Note</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Share Note</h3>
               <button
                 onClick={() => {
                   setShowSingleNoteShareModal(false);
@@ -2153,7 +2170,7 @@ export default function Dashboard() {
                   setSingleNoteShareEmails([]);
                   setSingleNoteShareError('');
                 }}
-                className="text-gray-400 hover:text-gray-600 transition"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2162,16 +2179,16 @@ export default function Dashboard() {
             </div>
 
             <div className="mb-4">
-              <div className="bg-indigo-50 rounded-xl p-3 sm:p-4 mb-4">
+              <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-3 sm:p-4 mb-4 transition-colors">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm truncate">{noteToShare.title || 'Untitled'}</p>
-                    <p className="text-xs text-gray-600 mt-0.5">
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{noteToShare.title || 'Untitled'}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                       {noteToShare.collaborators?.length || 0} {noteToShare.collaborators?.length === 1 ? 'collaborator' : 'collaborators'}
                     </p>
                   </div>
@@ -2179,7 +2196,7 @@ export default function Dashboard() {
               </div>
 
               {singleNoteShareError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-start gap-2">
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl text-sm flex items-start gap-2 transition-colors">
                   <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -2188,23 +2205,23 @@ export default function Dashboard() {
               )}
 
               <form onSubmit={handleShareSingleNoteSubmit}>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Share with (email addresses)
                 </label>
                 
                 {/* Email Tags Display */}
                 {singleNoteShareEmails.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="flex flex-wrap gap-2 mb-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 transition-colors">
                     {singleNoteShareEmails.map((email, index) => (
                       <div
                         key={index}
-                        className="inline-flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-medium"
+                        className="inline-flex items-center gap-1.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm font-medium"
                       >
                         <span>{email}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveSingleNoteShareEmail(email)}
-                          className="hover:bg-indigo-200 rounded-full p-0.5 transition"
+                          className="hover:bg-indigo-200 dark:hover:bg-indigo-800 rounded-full p-0.5 transition"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2230,7 +2247,7 @@ export default function Dashboard() {
                       }
                     }}
                     placeholder="colleague@example.com"
-                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                     autoFocus
                   />
                   <button
@@ -2241,7 +2258,7 @@ export default function Dashboard() {
                     Add
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mb-4">Press Enter or click Add to add multiple email addresses</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Press Enter or click Add to add multiple email addresses</p>
                 
                 {singleNoteShareEmails.length > 0 && (
                   <button
@@ -2262,7 +2279,7 @@ export default function Dashboard() {
                 setSingleNoteShareEmails([]);
                 setSingleNoteShareError('');
               }}
-              className="w-full px-4 py-2 sm:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition text-sm"
+              className="w-full px-4 py-2 sm:py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-xl transition text-sm"
             >
               Cancel
             </button>
@@ -2274,16 +2291,16 @@ export default function Dashboard() {
 
       {/* Add Note to Folder Modal (for single note) */}
       {showAddToFolderModal && noteToAddToFolder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-8">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center p-4 z-50 transition-colors">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-8 transition-colors">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Add to Folder</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Add to Folder</h3>
               <button
                 onClick={() => {
                   setShowAddToFolderModal(false);
                   setNoteToAddToFolder(null);
                 }}
-                className="text-gray-400 hover:text-gray-600 transition"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2291,22 +2308,22 @@ export default function Dashboard() {
               </button>
             </div>
 
-            <div className="bg-indigo-50 rounded-xl p-3 sm:p-4 mb-4">
+            <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-3 sm:p-4 mb-4 transition-colors">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 text-sm truncate">{noteToAddToFolder.title || 'Untitled'}</p>
-                  <p className="text-xs text-gray-600 mt-0.5">Select a folder below</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{noteToAddToFolder.title || 'Untitled'}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Select a folder below</p>
                 </div>
               </div>
             </div>
 
             {folders.length === 0 ? (
-              <div className="text-center py-8 text-gray-600">
+              <div className="text-center py-8 text-gray-600 dark:text-gray-400">
                 <p className="text-sm">No folders available. Create a folder first.</p>
               </div>
             ) : (
@@ -2315,9 +2332,9 @@ export default function Dashboard() {
                   <button
                     key={folder._id}
                     onClick={() => handleAddNoteToFolder(noteToAddToFolder._id, folder._id)}
-                    className={`w-full flex items-center gap-3 p-3 border-2 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition ${
-                      noteToAddToFolder.folder === folder._id ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200'
-                    } ${folder.isPrivate ? 'bg-pink-50 border-pink-200 hover:border-pink-400 hover:bg-pink-100' : ''}`}
+                    className={`w-full flex items-center gap-3 p-3 border-2 rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer transition ${
+                      noteToAddToFolder.folder === folder._id ? 'border-indigo-400 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-gray-200 dark:border-gray-700'
+                    } ${folder.isPrivate ? 'bg-pink-50 dark:bg-pink-900/30 border-pink-200 dark:border-pink-800 hover:border-pink-400 dark:hover:border-pink-600 hover:bg-pink-100 dark:hover:bg-pink-900/40' : ''}`}
                   >
                     <div className={`w-10 h-10 bg-gradient-to-br ${getColorClasses(folder.color)} rounded-lg flex items-center justify-center flex-shrink-0`}>
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2329,13 +2346,13 @@ export default function Dashboard() {
                       </svg>
                     </div>
                     <div className="flex-1 text-left min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm truncate">
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
                         {folder.name}
-                        {folder.isPrivate && <span className="ml-1 text-xs text-pink-600">(Hidden from other views)</span>}
+                        {folder.isPrivate && <span className="ml-1 text-xs text-pink-600 dark:text-pink-400">(Hidden from other views)</span>}
                       </p>
-                      <p className="text-xs text-gray-500">{notes.filter(n => n.folder === folder._id).length} notes</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{notes.filter(n => n.folder === folder._id).length} notes</p>
                     </div>
-                    <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
@@ -2348,8 +2365,8 @@ export default function Dashboard() {
 
       {/* PIN Modal for Private Folder */}
       {showPinModal && pendingFolder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center p-4 z-50 transition-colors">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 transition-colors">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
@@ -2358,8 +2375,8 @@ export default function Dashboard() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Private Folder</h3>
-                  <p className="text-sm text-gray-600">Enter 4-digit PIN</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Private Folder</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Enter 4-digit PIN</p>
                 </div>
               </div>
               <button
@@ -2369,7 +2386,7 @@ export default function Dashboard() {
                   setPinError('');
                   setPendingFolder(null);
                 }}
-                className="text-gray-400 hover:text-gray-600 transition"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2379,7 +2396,7 @@ export default function Dashboard() {
 
             <form onSubmit={handlePinSubmit}>
               <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                   {pendingFolder.pin ? 'Enter your PIN to access' : 'Set a new PIN for this folder'}
                 </label>
                 <input
@@ -2393,18 +2410,18 @@ export default function Dashboard() {
                     setPinError('');
                   }}
                   placeholder="••••"
-                  className="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-center text-2xl font-bold tracking-widest"
+                  className="w-full px-4 py-3 border-2 border-blue-300 dark:border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-center text-2xl font-bold tracking-widest bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                   autoFocus
                 />
                 {pinError && (
-                  <div className="mt-3 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-start gap-2">
+                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl text-sm flex items-start gap-2 transition-colors">
                     <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <p>{pinError}</p>
                   </div>
                 )}
-                <p className="text-xs text-gray-500 mt-2 text-center">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
                   {pendingFolder.pin ? 'Enter the 4-digit PIN you set previously' : 'This PIN will be required to access this folder'}
                 </p>
               </div>
@@ -2418,7 +2435,7 @@ export default function Dashboard() {
                     setPinError('');
                     setPendingFolder(null);
                   }}
-                  className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm"
+                  className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition text-sm"
                 >
                   Cancel
                 </button>

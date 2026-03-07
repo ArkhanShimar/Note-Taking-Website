@@ -309,3 +309,123 @@
 .editor-custom:focus-within .ql-toolbar {
   border-color: #818cf8 !important;
 }
+
+/* Dark Mode Styles */
+.dark .editor-custom .ql-toolbar {
+  border-color: #374151 !important;
+  border-bottom-color: #1f2937 !important;
+  background: linear-gradient(to bottom, #1f2937, #111827);
+}
+
+.dark .editor-custom .ql-container {
+  border-color: #374151 !important;
+  background-color: #111827;
+}
+
+.dark .editor-custom .ql-editor {
+  color: #e5e7eb;
+}
+
+.dark .editor-custom .ql-editor.ql-blank::before {
+  color: #6b7280;
+}
+
+.dark .editor-custom .ql-toolbar button:hover {
+  background-color: #374151;
+}
+
+.dark .editor-custom .ql-toolbar button.ql-active {
+  background-color: #4b5563;
+  color: #818cf8;
+}
+
+.dark .editor-custom .ql-toolbar .ql-stroke {
+  stroke: #9ca3af;
+}
+
+.dark .editor-custom .ql-toolbar .ql-fill {
+  fill: #9ca3af;
+}
+
+.dark .editor-custom .ql-toolbar button:hover .ql-stroke {
+  stroke: #818cf8;
+}
+
+.dark .editor-custom .ql-toolbar button:hover .ql-fill {
+  fill: #818cf8;
+}
+
+.dark .editor-custom .ql-toolbar button.ql-active .ql-stroke {
+  stroke: #818cf8;
+}
+
+.dark .editor-custom .ql-toolbar button.ql-active .ql-fill {
+  fill: #818cf8;
+}
+
+.dark .editor-custom .ql-toolbar .ql-picker-label:hover {
+  background-color: #374151;
+  color: #818cf8;
+}
+
+.dark .editor-custom .ql-toolbar .ql-picker-options {
+  border-color: #374151;
+  background-color: #1f2937;
+}
+
+.dark .editor-custom .ql-editor a {
+  color: #818cf8;
+}
+
+.dark .editor-custom .ql-editor a:hover {
+  color: #a5b4fc;
+}
+
+.dark .editor-custom .ql-editor img {
+  border-color: #374151;
+}
+
+.dark .editor-custom .ql-editor img:hover {
+  border-color: #6366f1;
+}
+
+.dark .editor-custom .ql-editor h1 {
+  color: #f3f4f6;
+}
+
+.dark .editor-custom .ql-editor h2 {
+  color: #e5e7eb;
+}
+
+.dark .editor-custom .ql-editor h3 {
+  color: #d1d5db;
+}
+
+.dark .editor-custom .ql-editor blockquote {
+  border-left-color: #6366f1;
+  color: #d1d5db;
+  background-color: #1f2937;
+}
+
+.dark .editor-custom .ql-editor pre {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+.dark .editor-custom .ql-editor code {
+  background-color: #1f2937;
+  color: #fca5a5;
+}
+
+.dark .editor-custom .ql-container.ql-snow {
+  border-color: #374151 !important;
+}
+
+.dark .editor-custom:focus-within .ql-container {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.dark .editor-custom:focus-within .ql-toolbar {
+  border-color: #6366f1 !important;
+}

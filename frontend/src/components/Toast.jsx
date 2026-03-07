@@ -18,14 +18,14 @@ export default function Toast({ message, type = 'error', onClose }) {
 
   return (
     <div className="fixed top-4 right-4 z-50 animate-slide-in">
-      <div className={`${bgColor} text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 min-w-[300px] max-w-md`}>
+      <div className={`${bgColor} dark:opacity-95 text-white px-6 py-4 rounded-xl shadow-2xl dark:shadow-black/50 flex items-center gap-3 min-w-[300px] max-w-md transition-all`}>
         <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           {icon}
         </svg>
         <p className="flex-1 font-medium">{message}</p>
         <button
           onClick={onClose}
-          className="flex-shrink-0 hover:bg-white/20 rounded-lg p-1 transition"
+          className="flex-shrink-0 hover:bg-white/20 dark:hover:bg-white/30 rounded-lg p-1 transition"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
