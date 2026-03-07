@@ -1914,6 +1914,13 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col pt-14 md:pt-0 md:ml-80">
         {renderContent()}
+        
+        {/* Copyright Footer */}
+        <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-3 px-6 transition-colors">
+          <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+            © {new Date().getFullYear()} Notely. All rights reserved.
+          </p>
+        </div>
       </div>
 
       {/* Share Notes Modal */}
